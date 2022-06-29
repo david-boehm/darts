@@ -1,5 +1,7 @@
 import os
-from definitions import *
+from definitions import Throw, GameMode, CheckInOut, SetLegMode, InputMethod
+from typing import Any
+
 class CLI():
 	def __init__(self) -> None:
 		pass
@@ -31,34 +33,22 @@ class CLI():
 		to_parse = input("Players (sep by whitespace): ")
 		return to_parse.split()
 
-	def read_game_options(self) -> dict[str,int]:
+	def read_game_options(self) -> dict[str, Any]:
 		game_opt = {}
-		game_opt["game_mode"] = GameMode.X01.value
+		game_opt["game_mode"] = GameMode.X01
 		game_opt["start_points"] = 501
 		game_opt["sets"] = 1
 		game_opt["legs"] = 2
-		game_opt["check_out"] = CheckInOut.DOUBLE.value
-		game_opt["check_in"] = CheckInOut.STRAIGHT.value
-		game_opt["mode"] = SetLegMode.FIRSTTO.value
-		game_opt["input_method"] = InputMethod.THREEDARTS.value
+		game_opt["check_out"] = CheckInOut.DOUBLE
+		game_opt["check_in"] = CheckInOut.STRAIGHT
+		game_opt["mode"] = SetLegMode.FIRSTTO
+		game_opt["input_method"] = InputMethod.THREEDARTS
 		return game_opt
 
-	def read_score(self, message) -> int:
+	def read_score(self, message) -> Throw:
 		while True:
 			try:
-				dart = input(message)
-				if len(dart.split()) != 1:
-					raise ValueError(f"Number of input darts: {len(dart.split())} not equal to 1")
-				if dart.isdecimal():
-					return int(dart)
-				elif dart.lower() == "exit":
-					exit()
-				else:
-					if dart.lower().startswith("d"):
-						return int(dart[1:])*2
-					elif dart.lower().startswith("t"):
-						return int(dart[1:])*3
-					else:
-						raise ValueError(f"Input does not match expected pattern")
+				return Throw(input(message))
+
 			except ValueError as err:
 				print(f"Wrong input: {err}")
