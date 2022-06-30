@@ -30,9 +30,9 @@ class Darts():
 	def do_X01_turn(self) -> None:
 		for player in self.players:
 			self.ui.write(f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
-			for dart in range(self.game_opt["input_method"]):
-				score = self.ui.read_score(f"{player} requires: {self.scoreboard.get_points_of_player(player)} - Dart {dart+1}: ")
-				overthrow = self.scoreboard.subtract_score(player, score, dart)
+			for dart in range(self.game_opt["input_method"].value):
+				throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_points_of_player(player)} - Dart {dart+1}: ")
+				overthrow = self.scoreboard.subtract_score(player, throw.calc_score(), dart)
 				if overthrow:
 					self.ui.overthrow()
 					break

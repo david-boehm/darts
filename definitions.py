@@ -38,6 +38,7 @@ class Throw():
 		self.input_methode = input_methode
 
 	def is_valid_input(self) -> None:
+		prefix = ""
 		input_score = self.input_score
 		if len(input_score.split()) != 1:
 			raise ValueError(f"Number of input darts: {len(self.input_score.split())} not equal to 1")

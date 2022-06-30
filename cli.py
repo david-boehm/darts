@@ -1,6 +1,8 @@
-import os
+import os, sys
 from definitions import Throw, GameMode, CheckInOut, SetLegMode, InputMethod
 from typing import Any
+
+ABORT_MSG = ["exit","abort","quit","stop","end"]
 
 class CLI():
 	def __init__(self) -> None:
@@ -45,10 +47,15 @@ class CLI():
 		game_opt["input_method"] = InputMethod.THREEDARTS
 		return game_opt
 
-	def read_score(self, message) -> Throw:
+	def read_throw(self, message: str) -> Throw:
 		while True:
 			try:
-				return Throw(input(message))
-
+				user_input = input(message)
+				if user_input in ABORT_MSG:
+					break
+				throw = Throw(user_input)
+				throw.is_valid_input()
+				return throw
 			except ValueError as err:
 				print(f"Wrong input: {err}")
+		sys.exit(f"Game was aborted via command: {user_input}")  

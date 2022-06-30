@@ -22,7 +22,9 @@ valid_test_data = [
 @pytest.mark.parametrize(
 	"input_score,input_method,score", valid_test_data)
 def test_valid_throw(input_score: str, input_method: InputMethod, score: int) -> None:
-	assert Throw(input_score, input_method).calc_score() == score
+	throw = Throw(input_score, input_method)
+	throw.is_valid_input()
+	assert throw.calc_score() == score
 
 invalid_test_data = [
 	("t 20",InputMethod.THREEDARTS),
