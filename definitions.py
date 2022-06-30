@@ -1,5 +1,9 @@
 from enum import Enum, auto
 
+SEGMENTS = [x+1 for x in range(25) if x+1 <= 20 or x+1 == 25]
+IMPOSSIBLE_SCORES = [163, 166, 169, 172, 173, 175, 176, 178, 179]
+BOGEY_NUMBERS = [169, 168, 166, 165, 163, 162, 159]
+
 class GameMode(Enum):
 	X01 = auto()
 
@@ -30,23 +34,38 @@ class InputMethod(Enum):
 
 class Throw():
 	def __init__(self, input_score: str, input_methode: InputMethod = InputMethod.THREEDARTS) -> None:
-		self.input_score = input_score
-		self.input_methode = InputMethod
-		self.score = self.is_valid_input()
+		self.input_score = input_score.strip()
+		self.input_methode = input_methode
 
-	def is_valid_input(self) -> int:
-		if self.input_methode == InputMethod.ROUND and not self.input_score.isdecimal():
-			raise ValueError(f"Input {self.input_score} is not decimal")
-		if len(self.input_score.split()) != 1:
+	def is_valid_input(self) -> None:
+		input_score = self.input_score
+		if len(input_score.split()) != 1:
 			raise ValueError(f"Number of input darts: {len(self.input_score.split())} not equal to 1")
+		if not input_score.isdecimal():
+			if self.input_methode == InputMethod.ROUND:
+				raise ValueError(f"Input {self.input_score} is not decimal")
+			elif self.input_methode == InputMethod.THREEDARTS:
+				if not input_score.lower().startswith("d") and not input_score.lower().startswith("t"):
+					raise ValueError(f"Prefix {self.input_score[:1]} does not exist")
+			prefix = input_score[:1]
+			input_score = input_score[1:]
+		if input_score.isdecimal():
+			input_score = int(input_score)
+			if self.input_methode == InputMethod.ROUND:
+				if input_score in IMPOSSIBLE_SCORES or input_score > 180:
+					raise ValueError(f"Input {self.input_score} is impossible to score")
+			elif self.input_methode == InputMethod.THREEDARTS:
+				if not input_score in SEGMENTS:
+					raise ValueError(f"Input {self.input_score} is not a segment")
+				if prefix.lower() == "t" and input_score == 25:
+					raise ValueError(f"Input {self.input_score} is not a segment")
+		else: # fail if rest after prefix is not decimal
+			raise ValueError(f"Input {self.input_score} does not match pattern")
+
+	def calc_score(self) -> int:
 		if self.input_score.isdecimal():
 			return int(self.input_score)
-		elif self.input_score.lower() == "exit":
-			exit()
-		else:
-			if self.input_score.lower().startswith("d"):
-				return int(self.input_score[1:])*2
-			elif self.input_score.lower().startswith("t"):
-				return int(self.input_score[1:])*3
-			else:
-				raise ValueError(f"Input does not match expected pattern")
+		elif self.input_score.lower().startswith("d"):
+			return int(self.input_score[1:])*2
+		elif self.input_score.lower().startswith("t"):
+			return int(self.input_score[1:])*3
