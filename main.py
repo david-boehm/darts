@@ -1,10 +1,10 @@
-from src.game_options import GameMode
+from src.game_options import GameOptions, GameMode
 from src.scoreboard import Scoreboard
 from src.cli import CLI
 
 
 class Darts():
-	def __init__(self, ui:CLI , players: list[str], game_opt: dict[str,int]) -> None:
+	def __init__(self, ui:CLI , players: list[str], game_opt: GameOptions) -> None:
 		self.ui = ui
 		self.scoreboard = Scoreboard(game_opt)
 		self.players = players
@@ -15,7 +15,7 @@ class Darts():
 	def play(self) -> None:
 		self.ui.display_game_options(self.game_opt)
 		self.ui.write("--- Game on! ---")
-		if self.game_opt["game_mode"] == GameMode.X01:
+		if self.game_opt.game_mode == GameMode.X01:
 			game_won = False
 			for player in self.players:
 				self.scoreboard.register_player(player)
@@ -30,7 +30,7 @@ class Darts():
 	def do_X01_turn(self) -> None:
 		for player in self.players:
 			self.ui.write(f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
-			for dart in range(self.game_opt["input_method"].value):
+			for dart in range(self.game_opt.input_method.value):
 				throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_points_of_player(player)} - Dart {dart+1}: ")
 				overthrow = self.scoreboard.subtract_score(player, throw.calc_score(), dart)
 				if overthrow:

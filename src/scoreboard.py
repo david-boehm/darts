@@ -1,12 +1,28 @@
+from dataclasses import dataclass
+from src.game_options import GameOptions
+from src.general.throw import Throw
+
+@dataclass
+class Turn:
+	current_set: int
+	current_leg: int
+	player: str
+	throw: Throw
+	# won_sets: int
+	# leg_breaks: int
+	# won_legs: int
+	# set_breaks: int
+
 class Scoreboard():
-	def __init__(self, game_opt: dict[str,int]):
+	def __init__(self, game_opt: GameOptions):
+		self.history = list[Turn]
 		self.game_opt = game_opt
 		self.points: dict[str, int] = {}
 		self.won_legs: dict[str, int] = {}
 		self.won_sets: dict[str, int] = {}
 
 	def register_player(self, player: str) -> None:
-		self.points[player] = self.game_opt["start_points"]
+		self.points[player] = self.game_opt.start_points
 		self.won_legs[player] = 0
 		self.won_sets[player] = 0
 
@@ -24,20 +40,20 @@ class Scoreboard():
 		return False
 
 	def check_if_set_win(self, player:str) -> bool:
-		if self.won_legs[player] >= self.game_opt["legs"]:
+		if self.won_legs[player] >= self.game_opt.legs:
 			self.reset_legs()
 			self.won_sets[player] += 1
 			return True
 		return False
 
 	def check_if_game_win(self, player: str) -> bool:
-		if self.won_sets[player] >= self.game_opt["sets"]:
+		if self.won_sets[player] >= self.game_opt.sets:
 			return True
 		return False
 
 	def reset_points(self) -> None:
 		for player in [*self.points]:
-			self.points[player] = self.game_opt["start_points"]
+			self.points[player] = self.game_opt.start_points
 
 	def reset_legs(self) -> None:
 		for player in [*self.won_legs]:

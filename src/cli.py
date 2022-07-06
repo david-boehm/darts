@@ -1,6 +1,5 @@
 import os, sys
-from typing import Any
-from src.game_options import GameMode, CheckInOut, SetLegMode, InputMethod
+from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod
 from src.general.throw import Throw
 
 ABORT_MSG = ["exit","abort","quit","stop","end"]
@@ -22,11 +21,12 @@ class CLI():
 			print(f"{player}:\t{sets[player]}\t{legs[player]}\t{points[player]}")
 		print((2*dashes+12)*"-")
 
-	def display_game_options(self, game_opt: dict[str, int]) -> None:
+	def display_game_options(self, game_opt: GameOptions) -> None:
 		dashes = 15
 		print(dashes*"-" + " Game settings " + dashes*"-")
-		for key,value in game_opt.items():
-			print(f"{key}: {value}")
+		# for key,value in game_opt.items():
+		# 	print(f"{key}: {value}")
+		print(game_opt)
 		print((2*dashes+15)*"-")
 
 	def overthrow(self) -> None:
@@ -36,16 +36,26 @@ class CLI():
 		to_parse = input("Players (sep by whitespace): ")
 		return to_parse.split()
 
-	def read_game_options(self) -> dict[str, Any]:
-		game_opt = {}
-		game_opt["game_mode"] = GameMode.X01
-		game_opt["start_points"] = 501
-		game_opt["sets"] = 1
-		game_opt["legs"] = 2
-		game_opt["check_out"] = CheckInOut.DOUBLE
-		game_opt["check_in"] = CheckInOut.STRAIGHT
-		game_opt["mode"] = SetLegMode.FIRSTTO
-		game_opt["input_method"] = InputMethod.THREEDARTS
+	def read_game_options(self) -> GameOptions:
+		# game_opt = {}
+		# game_opt["game_mode"] = GameMode.X01
+		# game_opt["start_points"] = 501
+		# game_opt["sets"] = 1
+		# game_opt["legs"] = 2
+		# game_opt["check_out"] = CheckInOut.DOUBLE
+		# game_opt["check_in"] = CheckInOut.STRAIGHT
+		# game_opt["mode"] = SetLegMode.FIRSTTO
+		# game_opt["input_method"] = InputMethod.THREEDARTS
+		game_opt = GameOptions(
+			game_mode = GameMode.X01,
+			sets = 1,
+			legs = 2,
+			start_points = 501,
+			check_out = CheckInOut.DOUBLE,
+			check_in = CheckInOut.STRAIGHT,
+			win_mode = SetLegMode.FIRSTTO,
+			input_method = InputMethod.THREEDARTS
+			)
 		return game_opt
 
 	def read_throw(self, message: str) -> Throw:
