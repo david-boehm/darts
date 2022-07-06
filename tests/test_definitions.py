@@ -24,7 +24,6 @@ valid_test_data = [
 	"input_score,input_method,score", valid_test_data)
 def test_valid_throw(input_score: str, input_method: InputMethod, score: int) -> None:
 	throw = Throw(input_score, input_method)
-	throw.is_valid_input()
 	assert throw.calc_score() == score
 
 invalid_test_data = [
@@ -45,7 +44,7 @@ invalid_test_data = [
 	"input_score,input_method", invalid_test_data)
 def test_invalid_throw(input_score: str, input_method: InputMethod) -> None:
 	with pytest.raises(ValueError):
-		Throw(input_score, input_method).is_valid_input()
+		Throw(input_score, input_method)
 
 # def suite() -> unittest.TestSuite:
 # 	suite = unittest.TestSuite()
