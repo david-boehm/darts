@@ -24,8 +24,6 @@ class CLI():
 	def display_game_options(self, game_opt: GameOptions) -> None:
 		dashes = 15
 		print(dashes*"-" + " Game settings " + dashes*"-")
-		# for key,value in game_opt.items():
-		# 	print(f"{key}: {value}")
 		print(game_opt)
 		print((2*dashes+15)*"-")
 
@@ -37,15 +35,6 @@ class CLI():
 		return to_parse.split()
 
 	def read_game_options(self) -> GameOptions:
-		# game_opt = {}
-		# game_opt["game_mode"] = GameMode.X01
-		# game_opt["start_points"] = 501
-		# game_opt["sets"] = 1
-		# game_opt["legs"] = 2
-		# game_opt["check_out"] = CheckInOut.DOUBLE
-		# game_opt["check_in"] = CheckInOut.STRAIGHT
-		# game_opt["mode"] = SetLegMode.FIRSTTO
-		# game_opt["input_method"] = InputMethod.THREEDARTS
 		game_opt = GameOptions(
 			game_mode = GameMode.X01,
 			sets = 1,

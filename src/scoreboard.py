@@ -4,18 +4,18 @@ from src.general.throw import Throw
 
 @dataclass
 class Turn:
-	current_set: int
-	current_leg: int
+	# current_set: int
+	# current_leg: int
 	player: str
-	throw: Throw
-	# won_sets: int
-	# leg_breaks: int
-	# won_legs: int
-	# set_breaks: int
+	score: int
+	won_sets: int = 0
+	won_legs: int = 0
+	leg_breaks: int = 0
+	set_breaks: int = 0
 
 class Scoreboard():
 	def __init__(self, game_opt: GameOptions):
-		self.history = list[Turn]
+		self.history: list[Turn] = []
 		self.game_opt = game_opt
 		self.points: dict[str, int] = {}
 		self.won_legs: dict[str, int] = {}
@@ -28,8 +28,16 @@ class Scoreboard():
 
 	def subtract_score(self, player: str, score: int, dart: int) -> bool:
 		if self.points[player] - score < 0:
+			self.history.append(Turn(player = player, 
+				score = self.points[player],
+				won_sets = self.won_sets[player],
+				won_legs = self.won_legs[player]))
 			return True
 		self.points[player] -= score
+		self.history.append(Turn(player = player, 
+				score = self.points[player],
+				won_sets = self.won_sets[player],
+				won_legs = self.won_legs[player]))
 		return False
 		
 	def check_if_leg_win(self, player: str) -> bool:
@@ -58,6 +66,9 @@ class Scoreboard():
 	def reset_legs(self) -> None:
 		for player in [*self.won_legs]:
 			self.won_legs[player] = 0
+
+	def get_history(self) -> list[Turn]:
+		return self.history
 
 	def get_points(self) -> dict[str, int]:
 		return self.points
