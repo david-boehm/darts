@@ -1,6 +1,7 @@
 import os, sys
-from definitions import Throw, GameMode, CheckInOut, SetLegMode, InputMethod
 from typing import Any
+from src.game_options import GameMode, CheckInOut, SetLegMode, InputMethod
+from src.general.throw import Throw
 
 ABORT_MSG = ["exit","abort","quit","stop","end"]
 

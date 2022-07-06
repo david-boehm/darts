@@ -1,5 +1,6 @@
 import pytest
-from definitions import InputMethod, Throw
+from src.game_options import InputMethod
+from src.general.throw import Throw
 
 
 # class TestThrowInputs(unittest.TestCase):

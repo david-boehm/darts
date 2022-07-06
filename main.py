@@ -1,6 +1,6 @@
-from definitions import GameMode
-from scoreboard import Scoreboard
-from cli import CLI
+from src.game_options import GameMode
+from src.scoreboard import Scoreboard
+from src.cli import CLI
 
 
 class Darts():
