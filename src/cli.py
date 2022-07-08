@@ -23,9 +23,11 @@ class CLI():
 
 	def display_game_options(self, game_opt: GameOptions) -> None:
 		dashes = 15
-		print(dashes*"-" + " Game settings " + dashes*"-")
-		print(game_opt)
-		print((2*dashes+15)*"-")
+		print(dashes*"#" + " Game settings " + dashes*"#")
+		for key, value in game_opt.__dict__.items():
+			print(f"{key}: {value}")
+		# print(game_opt)
+		print((2*dashes+15)*"#")
 
 	def overthrow(self) -> None:
 		self.write("Overthrow")
@@ -51,7 +53,7 @@ class CLI():
 		while True:
 			try:
 				user_input = input(message)
-				if user_input in ABORT_MSG:
+				if user_input.lower() in ABORT_MSG:
 					break
 				throw = Throw(user_input)
 				throw.is_valid_input()

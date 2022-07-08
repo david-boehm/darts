@@ -1,10 +1,15 @@
 from src.game_options import InputMethod, IMPOSSIBLE_SCORES, SEGMENTS
 
 class Throw:
+	# Eventually meeds a dart variable to safe the thrown dart 1, 2 or 3
 	def __init__(self, input_score: str, input_methode: InputMethod = InputMethod.THREEDARTS) -> None:
 		self.input_score = input_score.strip().lower()
 		self.input_methode = input_methode
 		self.is_valid_input()
+
+	def __repr__(self) -> str:
+		list_of_items = [f"{key}: {value}" for key, value in self.__dict__.items()]
+		return " ".join(list_of_items)
 
 	def is_valid_input(self) -> None:
 		prefix = ""

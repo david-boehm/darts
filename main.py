@@ -19,31 +19,49 @@ class Darts():
 			game_won = False
 			for player in self.players:
 				self.scoreboard.register_player(player)
-
-			sets, legs = self.scoreboard.get_sets_and_legs()
+			self.ui.display_scoreboard(*self.scoreboard.get_won_sets_and_legs(), 
+				self.scoreboard.get_remaining_score(),False)
 			while not game_won:
-				self.ui.display_scoreboard(sets, legs, self.scoreboard.get_points())
-				game_won = self.do_X01_turn()
-				sets, legs = self.scoreboard.get_sets_and_legs()
-			self.ui.display_scoreboard(sets, legs, self.scoreboard.get_points(),False)
+				game_won = self.do_X01_round()
+				self.ui.display_scoreboard(*self.scoreboard.get_won_sets_and_legs(), 
+					self.scoreboard.get_remaining_score())
 
-	def do_X01_turn(self) -> bool:
+	def do_X01_round(self) -> bool:
 		for player in self.players:
 			self.ui.write(f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
 			for dart in range(self.game_opt.input_method.value):
-				throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_points_of_player(player)} - Dart {dart+1}: ")
-				overthrow = self.scoreboard.subtract_score(player, throw.calc_score(), dart)
-				# for turn in self.scoreboard.get_history():
-				# 	print(turn)
-				if overthrow:
+				game_win, set_win, leg_win = False, False, False
+				throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: ")
+				
+
+				remaining_score = self.scoreboard.get_remaining_score_of_player(player)
+				if remaining_score - throw.calc_score() == 0: 
+					leg_win = True
+					if self.scoreboard.get_won_legs_of_player(player) + 1 >= self.game_opt.legs:
+						set_win, leg_win = True, True
+						if self.scoreboard.get_won_sets_of_player(player) + 1 >= self.game_opt.sets:
+							game_win = True
+
+					self.scoreboard.add_throw(player, throw, set_win, leg_win)
+
+					print("total history")
+					for turn in self.scoreboard.get_history()[-2:]:
+						print(turn)
+					print("leg history")
+					# still has entries, shoud not have one
+					for turn in self.scoreboard.get_leg_history()[-2:]:
+						print(turn)
+					print(self.scoreboard.where_leg_won)
+					input()
+					return game_win
+
+				self.scoreboard.add_throw(player, throw, False, False)
+				for turn in self.scoreboard.get_leg_history()[-2:]:
+					print(turn)
+				if remaining_score - throw.calc_score() < 0:
 					self.ui.overthrow()
 					break
-				else: 
-					leg_win = self.scoreboard.check_if_leg_win(player)
-					set_win = self.scoreboard.check_if_set_win(player)
-					game_win = self.scoreboard.check_if_game_win(player)
-					if leg_win:
-						 return (leg_win and game_win)
+
 		return False
 
 def main() -> None:
