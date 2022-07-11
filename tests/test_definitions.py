@@ -18,6 +18,8 @@ valid_test_data = [
 	("T20",InputMethod.THREEDARTS, 60),
 	("D20", InputMethod.THREEDARTS, 40),
 	("20", InputMethod.THREEDARTS, 20),
+	("0",InputMethod.THREEDARTS, 0),
+	("0",InputMethod.ROUND, 0),
 	("180",InputMethod.ROUND, 180)
 ]
 @pytest.mark.parametrize(

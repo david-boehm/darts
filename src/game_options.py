@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 
-SEGMENTS = [x+1 for x in range(25) if x+1 <= 20 or x+1 == 25]
+SEGMENTS = [x for x in range(26) if x <= 20 or x == 25]
 IMPOSSIBLE_SCORES = [163, 166, 169, 172, 173, 175, 176, 178, 179]
 BOGEY_NUMBERS = [169, 168, 166, 165, 163, 162, 159]
 
