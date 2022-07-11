@@ -44,20 +44,20 @@ class Darts():
 
 					self.scoreboard.add_throw(player, throw, set_win, leg_win)
 
-					print("total history")
-					for turn in self.scoreboard.get_history()[-2:]:
-						print(turn)
-					print("leg history")
-					# still has entries, shoud not have one
-					for turn in self.scoreboard.get_leg_history()[-2:]:
-						print(turn)
-					print(self.scoreboard.where_leg_won)
-					input()
+					# print("total history")
+					# for turn in self.scoreboard.get_history()[-2:]:
+					# 	print(turn)
+					# print("leg history")
+					# # still has entries, shoud not have one
+					# for turn in self.scoreboard.get_leg_history()[-2:]:
+					# 	print(turn)
+					# print(self.scoreboard.where_leg_won)
+					# input()
 					return game_win
 
 				self.scoreboard.add_throw(player, throw, False, False)
-				for turn in self.scoreboard.get_leg_history()[-2:]:
-					print(turn)
+				# for turn in self.scoreboard.get_leg_history()[-2:]:
+				# 	print(turn)
 				if remaining_score - throw.calc_score() < 0:
 					self.ui.overthrow()
 					break
