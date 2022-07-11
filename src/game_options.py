@@ -43,3 +43,4 @@ class GameOptions:
 	check_in: CheckInOut
 	win_mode: SetLegMode
 	input_method: InputMethod
+	start_player: int = 0

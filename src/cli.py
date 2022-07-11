@@ -36,7 +36,23 @@ class CLI():
 		to_parse = input("Players (sep by whitespace): ")
 		return to_parse.split()
 
-	def read_game_options(self) -> GameOptions:
+	def read_game_options(self, players: list[str]) -> GameOptions:
+		start_player = 0
+		while len(players) > 1:
+			try:
+				to_display = "Which player starts the game\n"
+				for i,name in enumerate(players):
+					to_display += f"{name}: {i+1}"
+					if i < len(players) - 1:
+						to_display += " - "
+				to_display += ": "
+				start_player = int(input(to_display)) - 1
+				if start_player >= len(players) or start_player < 0:
+					raise ValueError("Not a valid player")
+				break
+			except ValueError as err:
+				print(err)
+
 		game_opt = GameOptions(
 			game_mode = GameMode.X01,
 			sets = 1,
@@ -45,7 +61,8 @@ class CLI():
 			check_out = CheckInOut.DOUBLE,
 			check_in = CheckInOut.STRAIGHT,
 			win_mode = SetLegMode.FIRSTTO,
-			input_method = InputMethod.THREEDARTS
+			input_method = InputMethod.THREEDARTS,
+			start_player = start_player
 			)
 		return game_opt
 
