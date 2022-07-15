@@ -5,6 +5,11 @@ SEGMENTS = [x for x in range(26) if x <= 20 or x == 25]
 IMPOSSIBLE_SCORES = [163, 166, 169, 172, 173, 175, 176, 178, 179]
 BOGEY_NUMBERS = [169, 168, 166, 165, 163, 162, 159]
 
+class ThrowReturn(Enum):
+	THROW = "throw"
+	UNDO = "undo"
+	EXIT = "exit"
+
 class GameMode(Enum):
 	X01 = "X01"
 

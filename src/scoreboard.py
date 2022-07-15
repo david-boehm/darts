@@ -20,14 +20,12 @@ class Turn:
 
 class Scoreboard():
 	def __init__(self, game_opt: GameOptions):
-		self.history: list[Turn] = []
-		self.where_leg_won: list[int] = [0]
-		self.players: list[str] = []
-
 		self.game_opt = game_opt
-		# self.points: dict[str, int] = {}
+		self.players: list[str] = []
 		self.won_legs: dict[str, int] = {}
 		self.won_sets: dict[str, int] = {}
+		self.history: list[Turn] = []
+		self.where_leg_won: list[int] = [0]
 
 	def register_player(self, player: str) -> None:
 		self.players.append(player)
@@ -37,10 +35,6 @@ class Scoreboard():
 		self.won_sets[player] = 0
 
 	def add_throw(self, player: str, throw: Throw, set_win: bool, leg_win: bool) -> None:
-		# won_sets = self.get_won_sets_of_player(player)
-		# won_legs = self.get_won_legs_of_player(player)
-		score = self.get_remaining_score_of_player(player)
-
 		if leg_win:
 			self.where_leg_won.append(len(self.history)+1)
 			self.won_legs[player] += 1
@@ -49,11 +43,17 @@ class Scoreboard():
 			self.won_sets[player] +=1
 
 		self.history.append(Turn(player = player, 
-				score = score,
+				score = self.get_remaining_score_of_player(player),
 				throw = throw,
 				won_sets = self.won_sets[player],
 				won_legs = self.won_legs[player]))
-		
+	
+	def undo_throw(self) -> bool:
+		if len(self.history):
+			self.history.pop()
+			return True
+		return False
+
 	# def add_leg_win(self, player: str) -> None:
 	# 	self.won_legs[player] += 1
 

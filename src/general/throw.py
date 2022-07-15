@@ -1,5 +1,6 @@
 from src.game_options import InputMethod, IMPOSSIBLE_SCORES, SEGMENTS
 
+
 class Throw:
 	# Eventually meeds a dart variable to safe the thrown dart 1, 2 or 3
 	def __init__(self, input_score: str, input_methode: InputMethod = InputMethod.THREEDARTS) -> None:

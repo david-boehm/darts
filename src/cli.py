@@ -1,8 +1,11 @@
-import os, sys
-from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod
+import os
+from typing import Optional
+
+from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn
 from src.general.throw import Throw
 
 ABORT_MSG = ["exit","abort","quit","stop","end"]
+UNDO = ["undo","back"]
 
 class CLI():
 	def __init__(self) -> None:
@@ -66,15 +69,17 @@ class CLI():
 			)
 		return game_opt
 
-	def read_throw(self, message: str) -> Throw:
+	def read_throw(self, message: str) -> tuple[ThrowReturn,Throw]:
 		while True:
 			try:
 				user_input = input(message)
 				if user_input.lower() in ABORT_MSG:
-					break
+					return ThrowReturn.EXIT , Throw("0")
+				elif user_input.lower() in UNDO:
+					return ThrowReturn.UNDO, Throw("0")
 				throw = Throw(user_input)
 				throw.is_valid_input()
-				return throw
+				return ThrowReturn.THROW, throw
 			except ValueError as err:
 				print(f"Wrong input: {err}")
-		sys.exit(f"Game was aborted via command: {user_input}")  
+
