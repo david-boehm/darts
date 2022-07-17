@@ -1,22 +1,36 @@
 import os
 from typing import Optional
+from platform import system
 
 from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn
 from src.general.throw import Throw
 
 ABORT_MSG = ["exit","abort","quit","stop","end"]
 UNDO = ["undo","back"]
+IMPLEMENTED_OS = ["Windows","Linux"]
+OS_CLEAR = ["cls","clear"]
+
+def get_os() -> Optional(str):
+    if system() in IMPLEMENTED_OS:
+        return system()
+    return None
+
+def get_console_clear() -> str:
+    for i, os in enumerate(IMPLEMENTED_OS):
+        if system() == os:
+            return OS_CLEAR[i]
+    raise NotImplementedError(f"{system()} clear cmd not implemented")
 
 class CLI():
 	def __init__(self) -> None:
-		pass
+        self.cmd_clear = get_console_clear()
 
 	def write(self, message: str) -> None:
 		print(f"{message}")
 
 	def display_scoreboard(self, sets: dict[str, int], legs: dict[str, int], points: dict[str, int], clear_screen: bool = True) -> None:
 		if clear_screen:
-			os.system('cls')
+			os.system(self.cmd_clear)
 		dashes = 10
 		print(dashes*"-" + " Scoreboard " + dashes*"-")
 		print("Name\tSets\tLegs\tPoints")
