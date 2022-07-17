@@ -1,3 +1,4 @@
+#!/usr/bin/python3.9
 import sys
 
 from src.game_options import GameOptions, GameMode, ThrowReturn
@@ -48,36 +49,24 @@ class Darts():
             player = player_list[player_int]
             self.ui.write(f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
             while dart < self.game_opt.input_method.value:
-                game_win, set_win, leg_win = False, False, False
                 throw_return, throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: ")
                 if throw_return == ThrowReturn.EXIT:
                     sys.exit(f"The game was canceled")
                 elif throw_return == ThrowReturn.UNDO:
                     if self.scoreboard.undo_throw():
-                        if dart > 0:
-                            dart -= 1
-                        else:
+                        if dart == 0:
                             undo_player = True
                             break
+                        dart -= 1
                     continue
-
                 remaining_score = self.scoreboard.get_remaining_score_of_player(player)
-
-                if remaining_score - throw.calc_score() == 0: 
-                    leg_win = True
-                    if self.scoreboard.get_won_legs_of_player(player) + 1 >= self.game_opt.legs:
-                        set_win, leg_win = True, True
-                        if self.scoreboard.get_won_sets_of_player(player) + 1 >= self.game_opt.sets:
-                            game_win = True
-                    self.scoreboard.add_throw(player, throw, set_win, leg_win)
-                    return game_win
-
-                self.scoreboard.add_throw(player, throw, False, False)
+                self.scoreboard.add_throw(player, throw)
                 dart += 1
-                if remaining_score - throw.calc_score() < 0:
+                if remaining_score == throw.calc_score() :
+                    return self.scoreboard.is_win("game", player, throw)
+                elif remaining_score < throw.calc_score():
                     self.ui.overthrow()
-                    break
-
+                
             if undo_player:
                 dart = self.game_opt.input_method.value - 1
                 if player_int > 0:

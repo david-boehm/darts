@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from src.game_options import GameOptions
 from src.general.throw import Throw
 
+
+
 @dataclass
 class Turn:
     player: str
@@ -34,11 +36,11 @@ class Scoreboard():
         self.won_legs[player] = 0
         self.won_sets[player] = 0
 
-    def add_throw(self, player: str, throw: Throw, set_win: bool, leg_win: bool) -> None:
-        if leg_win:
+    def add_throw(self, player: str, throw: Throw) -> None:
+        if self.is_win("leg", player, throw):
             self.where_leg_won.append(len(self.history)+1)
             self.won_legs[player] += 1
-        if set_win:
+        if self.is_win("set", player, throw):
             self.reset_legs()
             self.won_sets[player] +=1
 
@@ -47,31 +49,26 @@ class Scoreboard():
                 throw = throw,
                 won_sets = self.won_sets[player],
                 won_legs = self.won_legs[player]))
-    
+
+    def is_win(self, asked: str, player: str, throw: Throw) -> bool:
+        if asked == "leg" and \
+            self.get_remaining_score_of_player(player) == throw.calc_score():
+            return True
+        elif asked == "set" and \
+            self.get_won_legs_of_player(player) >= self.game_opt.legs:
+            return True
+        elif asked == "game" and \
+            self.get_won_sets_of_player(player) >= self.game_opt.sets:
+            return True            
+        elif not asked in ["leg","set","game"]:
+            raise ValueError("Cannot determine if is_win()")
+        return False
+
     def undo_throw(self) -> bool:
         if len(self.history):
             self.history.pop()
             return True
         return False
-
-    # def add_leg_win(self, player: str) -> None:
-    #   self.won_legs[player] += 1
-
-    # def check_if_set_win(self, player:str) -> bool:
-    #   if self.won_legs[player] >= self.game_opt.legs:
-    #       self.reset_legs()
-    #       self.won_sets[player] += 1
-    #       return True
-    #   return False
-
-    # def check_if_game_win(self, player: str) -> bool:
-    #   if self.won_sets[player] >= self.game_opt.sets:
-    #       return True
-    #   return False
-
-    # def reset_points(self) -> None:
-    #   for player in [*self.points]:
-    #       self.points[player] = self.game_opt.start_points
 
     def reset_legs(self) -> None:
         for player in [*self.won_legs]:
