@@ -1,9 +1,18 @@
-from typing import Optional
+from typing import Optional, Union, Sequence, Any
 from dataclasses import dataclass
 from src.game_options import GameOptions
 from src.general.throw import Throw
 
+Num = Union[int, float]
 
+@dataclass
+class Stats:
+    player: str
+    sets: int = 0
+    legs: int = 0
+    score: int = 0
+    average: float = 0
+    darts: int = 0
 
 @dataclass
 class Turn:
@@ -118,3 +127,28 @@ class Scoreboard():
 
     def get_won_sets_and_legs_of_player(self, player: str) -> tuple[int, int]:
         return self.get_won_sets_of_player(player), self.get_won_legs_of_player(player)
+
+    def calc_average_of_player(self, player: str) -> float:
+        darts = 0
+        thrown_total = 0
+        if not len(self.history):
+            return 0
+        for turn in self.history:
+            if not turn.player == player:
+                continue
+            thrown_total += turn.throw.calc_score()
+            darts += 1
+        return thrown_total/darts
+
+    def get_all_stats(self) -> list[Stats]:
+        all_stats = []
+        for player in self.players:
+            player_stats = Stats(
+            player = player,
+            sets = self.get_won_sets_of_player(player),
+            legs = self.get_won_legs_of_player(player),
+            score = self.get_remaining_score_of_player(player),
+            average = self.calc_average_of_player(player))
+            all_stats.append(player_stats)
+        return all_stats
+

@@ -33,12 +33,10 @@ class Darts():
             game_won = False
             for player in self.players:
                 self.scoreboard.register_player(player)
-            self.ui.display_scoreboard(*self.scoreboard.get_won_sets_and_legs(), 
-                self.scoreboard.get_remaining_score(),False)
+            self.ui.display_scoreboard(self.scoreboard.get_all_stats(),False)
             while not game_won:
                 game_won = self.do_X01_round()
-                self.ui.display_scoreboard(*self.scoreboard.get_won_sets_and_legs(), 
-                    self.scoreboard.get_remaining_score())
+                self.ui.display_scoreboard(self.scoreboard.get_all_stats())
 
     def do_X01_round(self) -> bool:
         player_int = 0

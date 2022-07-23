@@ -2,6 +2,7 @@ import os
 from typing import Optional
 from platform import system
 
+from src.scoreboard import Stats
 from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn
 from src.general.throw import Throw
 
@@ -27,14 +28,26 @@ class CLI():
     def write(self, message: str) -> None:
         print(f"{message}")
 
-    def display_scoreboard(self, sets: dict[str, int], legs: dict[str, int], points: dict[str, int], clear_screen: bool = True) -> None:
+    def display_scoreboard(self, stats: list[Stats], clear_screen: bool = True) -> None:
         if clear_screen:
             os.system(self.cmd_clear)
         dashes = 10
         print(dashes*"-" + " Scoreboard " + dashes*"-")
-        print("Name\tSets\tLegs\tPoints")
-        for player in [*sets]:
-            print(f"{player}:\t{sets[player]}\t{legs[player]}\t{points[player]}")
+        to_print = ""
+        for field in stats[0].__dataclass_fields__:
+            to_print += f"{field.capitalize()}\t"
+        print(to_print)
+        for player in stats:
+            to_print = ""
+            for field in player.__dataclass_fields__:
+                sep = "\t"
+                if field == "player":
+                    sep =":\t"
+                if field == "average":
+                    to_print += f"{getattr(player,field):.2f}" + sep
+                    continue
+                to_print += f"{getattr(player,field)}" + sep
+            print(to_print)
         print((2*dashes+12)*"-")
 
     def display_game_options(self, game_opt: GameOptions) -> None:
@@ -56,11 +69,11 @@ class CLI():
         start_player = 0
         while len(players) > 1:
             try:
-                to_display = "Which player starts the game\n"
+                to_display = "Select starting player with number: \n"
                 for i,name in enumerate(players):
-                    to_display += f"{name}: {i+1}"
+                    to_display += f"{i+1}: {name}"
                     if i < len(players) - 1:
-                        to_display += " - "
+                        to_display += "  -  "
                 to_display += ": "
                 start_player = int(input(to_display)) - 1
                 if start_player >= len(players) or start_player < 0:
