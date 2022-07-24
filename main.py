@@ -1,5 +1,7 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python
 import sys
+import os
+import yaml
 
 from src.game_options import GameOptions, GameMode, ThrowReturn
 from src.scoreboard import Scoreboard
@@ -17,6 +19,13 @@ def set_start_player(players: list[str], start_player: int, sets: dict[str,int],
         rotated_players.append(rotated_players.pop(0))
     return rotated_players
 
+def read_game_opt_yaml() -> GameOptions:
+    if os.path.exists("game_opt.yaml"):
+        with open("game_opt.yaml","r") as file:
+            game_opt = yaml.load(file, yaml.CLoader)
+        return game_opt
+    return None
+
 class Darts():
     def __init__(self, ui:CLI , players: list[str], game_opt: GameOptions) -> None:
         self.ui = ui
@@ -25,6 +34,8 @@ class Darts():
         self.game_opt = game_opt
         # self.ui.write(f"players found: {self.players}")
         # self.ui.write(f"Game options {self.game_opt}")
+        with open("game_opt.yaml","w+") as file:
+            yaml.dump(game_opt, file)
     
     def play(self) -> None:
         self.ui.display_game_options(self.game_opt)
@@ -80,6 +91,7 @@ class Darts():
 def main() -> None:
     ui = CLI()
     players = ui.read_players()
+    print(f"thtest {read_game_opt_yaml()}")
     game_opt = ui.read_game_options(players)
     game = Darts(ui, players, game_opt)
     game.play()

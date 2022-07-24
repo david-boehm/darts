@@ -9,6 +9,7 @@ from src.general.throw import Throw
 ABORT_MSG = ["exit","abort","quit","stop","end"]
 UNDO = ["undo","back"]
 IMPLEMENTED_OS = {"Windows":"cls","Linux":"clear"}
+STATS_TO_PRINT = ["player","sets","legs","score","average"]
 
 def get_os() -> Optional[str]:
     if system() in IMPLEMENTED_OS:
@@ -31,15 +32,19 @@ class CLI():
     def display_scoreboard(self, stats: list[Stats], clear_screen: bool = True) -> None:
         if clear_screen:
             os.system(self.cmd_clear)
-        dashes = 10
+        dashes = 15
         print(dashes*"-" + " Scoreboard " + dashes*"-")
         to_print = ""
         for field in stats[0].__dataclass_fields__:
+            if not field in STATS_TO_PRINT:
+                continue
             to_print += f"{field.capitalize()}\t"
         print(to_print)
         for player in stats:
             to_print = ""
             for field in player.__dataclass_fields__:
+                if not field in STATS_TO_PRINT:
+                    continue
                 sep = "\t"
                 if field == "player":
                     sep =":\t"
