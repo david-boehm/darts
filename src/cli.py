@@ -3,7 +3,7 @@ from typing import Optional
 from platform import system
 
 from src.scoreboard import Stats
-from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn
+from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn, load_game_opt_from_file
 from src.general.throw import Throw
 
 ABORT_MSG = ["exit","abort","quit","stop","end"]
@@ -86,18 +86,9 @@ class CLI():
                 break
             except ValueError as err:
                 print(err)
-
-        game_opt = GameOptions(
-            game_mode = GameMode.X01,
-            sets = 1,
-            legs = 2,
-            start_points = 501,
-            check_out = CheckInOut.DOUBLE,
-            check_in = CheckInOut.STRAIGHT,
-            win_mode = SetLegMode.FIRSTTO,
-            input_method = InputMethod.THREEDARTS,
-            start_player = start_player
-            )
+        game_opt = load_game_opt_from_file()
+        game_opt.start_player = start_player
+        game_opt.save_to_file()
         return game_opt
 
     def read_throw(self, message: str) -> tuple[ThrowReturn,Throw]:

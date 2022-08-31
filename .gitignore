@@ -1,3 +1,7 @@
+# custom .gitignore 
+*.json
+*.yaml
+
 # Sublime .gitignore from github
 
 # Cache files for Sublime Text
