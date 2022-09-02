@@ -74,4 +74,3 @@ class Darts():
                 player_int += 1
                 dart = 0
         return False
-

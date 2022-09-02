@@ -1,5 +1,5 @@
 import pytest
-from main import set_start_player
+from src.darts import set_start_player
 
 def rotate(players: list[str], rotations: int) -> list[str]:
     _players = players.copy()
