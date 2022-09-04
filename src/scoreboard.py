@@ -5,6 +5,7 @@ from src.general.throw import Throw
 
 Num = Union[int, float]
 
+
 @dataclass
 class Stats:
     player: str
@@ -13,6 +14,7 @@ class Stats:
     score: int = 0
     average: float = 0
     darts: int = 0
+
 
 @dataclass
 class Turn:
@@ -28,6 +30,7 @@ class Turn:
         if self.score - self.throw.calc_score() < 0:
             return self.score
         return self.score - self.throw.calc_score()
+
 
 class Scoreboard():
     def __init__(self, game_opt: GameOptions):
@@ -47,29 +50,31 @@ class Scoreboard():
 
     def add_throw(self, player: str, throw: Throw) -> None:
         if self.is_win("leg", player, throw):
-            self.where_leg_won.append(len(self.history)+1)
+            self.where_leg_won.append(len(self.history) + 1)
             self.won_legs[player] += 1
         if self.is_win("set", player, throw):
             self.reset_legs()
-            self.won_sets[player] +=1
+            self.won_sets[player] += 1
 
-        self.history.append(Turn(player = player, 
-                score = self.get_remaining_score_of_player(player),
-                throw = throw,
-                won_sets = self.won_sets[player],
-                won_legs = self.won_legs[player]))
+        self.history.append(
+            Turn(
+                player=player,
+                score=self.get_remaining_score_of_player(player),
+                throw=throw,
+                won_sets=self.won_sets[player],
+                won_legs=self.won_legs[player]))
 
     def is_win(self, asked: str, player: str, throw: Throw) -> bool:
-        if asked == "leg" and \
-            self.get_remaining_score_of_player(player) == throw.calc_score():
+        if asked == "leg" and self.get_remaining_score_of_player(
+                player) == throw.calc_score():
             return True
         elif asked == "set" and \
-            self.get_won_legs_of_player(player) >= self.game_opt.legs:
+                self.get_won_legs_of_player(player) >= self.game_opt.legs:
             return True
         elif asked == "game" and \
-            self.get_won_sets_of_player(player) >= self.game_opt.sets:
-            return True            
-        elif not asked in ["leg","set","game"]:
+                self.get_won_sets_of_player(player) >= self.game_opt.sets:
+            return True
+        elif asked not in ["leg", "set", "game"]:
             raise ValueError("Cannot determine if is_win()")
         return False
 
@@ -90,15 +95,22 @@ class Scoreboard():
         return self.history[self.where_leg_won[-1]:]
 
     def get_last_turn_of_player(self, player: str) -> Optional[Turn]:
-        last_turn = next((turn for turn in reversed(self.get_history()) if turn.player == player), None)
+        last_turn = next(
+            (turn for turn in reversed(
+                self.get_history()) if turn.player == player),
+            None)
         return last_turn
 
     def get_last_turn_of_leg_of_player(self, player: str) -> Optional[Turn]:
-        last_turn = next((turn for turn in reversed(self.get_leg_history()) if turn.player == player), None)
+        last_turn = next(
+            (turn for turn in reversed(
+                self.get_leg_history()) if turn.player == player),
+            None)
         return last_turn
 
     def get_remaining_score(self) -> dict[str, int]:
-        return {player: self.get_remaining_score_of_player(player) for player in self.players}
+        return {player: self.get_remaining_score_of_player(
+            player) for player in self.players}
 
     def get_remaining_score_of_player(self, player: str) -> int:
         last_turn = self.get_last_turn_of_leg_of_player(player)
@@ -121,12 +133,14 @@ class Scoreboard():
         return self.won_legs[player]
 
     def get_won_sets_and_legs(self) -> tuple[dict[str, int], dict[str, int]]:
-        return {player: self.get_won_sets_of_player(player) for player in self.players}, \
-        {player: self.get_won_legs_of_player(player) for player in self.players}
+        return {
+            player: self.get_won_sets_of_player(player) for player in self.players}, {
+            player: self.get_won_legs_of_player(player) for player in self.players}
         # return self.won_sets, self.won_legs
 
     def get_won_sets_and_legs_of_player(self, player: str) -> tuple[int, int]:
-        return self.get_won_sets_of_player(player), self.get_won_legs_of_player(player)
+        return self.get_won_sets_of_player(
+            player), self.get_won_legs_of_player(player)
 
     def calc_average_of_player(self, player: str) -> float:
         darts = 0
@@ -138,17 +152,16 @@ class Scoreboard():
                 continue
             thrown_total += turn.throw.calc_score()
             darts += 1
-        return thrown_total/darts
+        return thrown_total / darts
 
     def get_all_stats(self) -> list[Stats]:
         all_stats = []
         for player in self.players:
             player_stats = Stats(
-            player = player,
-            sets = self.get_won_sets_of_player(player),
-            legs = self.get_won_legs_of_player(player),
-            score = self.get_remaining_score_of_player(player),
-            average = self.calc_average_of_player(player))
+                player=player,
+                sets=self.get_won_sets_of_player(player),
+                legs=self.get_won_legs_of_player(player),
+                score=self.get_remaining_score_of_player(player),
+                average=self.calc_average_of_player(player))
             all_stats.append(player_stats)
         return all_stats
-

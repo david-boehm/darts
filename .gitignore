@@ -1,6 +1,7 @@
 # custom .gitignore 
 *.json
 *.yaml
+*_env/
 
 # Sublime .gitignore from github
 

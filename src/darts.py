@@ -5,7 +5,13 @@ from src.game_options import GameOptions, GameMode, ThrowReturn
 from src.scoreboard import Scoreboard
 from src.general.throw import Throw
 
-def set_start_player(players: list[str], start_player: int, sets: dict[str,int], legs: dict[str,int]) -> list[str]:
+
+def set_start_player(players: list[str],
+                     start_player: int,
+                     sets: dict[str,
+                                int],
+                     legs: dict[str,
+                                int]) -> list[str]:
     # sets, legs = self.scoreboard.get_won_sets_and_legs()
     shift_legs = sum(legs.values()) % len(players)
     shift_sets = sum(sets.values()) % len(players)
@@ -16,8 +22,13 @@ def set_start_player(players: list[str], start_player: int, sets: dict[str,int],
         rotated_players.append(rotated_players.pop(0))
     return rotated_players
 
+
 class Darts():
-    def __init__(self, ui:CLI , players: list[str], game_opt: GameOptions) -> None:
+    def __init__(
+            self,
+            ui: CLI,
+            players: list[str],
+            game_opt: GameOptions) -> None:
         self.ui = ui
         self.scoreboard = Scoreboard(game_opt)
         self.players = players
@@ -32,7 +43,7 @@ class Darts():
             game_won = False
             for player in self.players:
                 self.scoreboard.register_player(player)
-            self.ui.display_scoreboard(self.scoreboard.get_all_stats(),False)
+            self.ui.display_scoreboard(self.scoreboard.get_all_stats(), False)
             while not game_won:
                 game_won = self.do_X01_round()
                 self.ui.display_scoreboard(self.scoreboard.get_all_stats())
@@ -40,13 +51,18 @@ class Darts():
     def do_X01_round(self) -> bool:
         player_int = 0
         dart = 0
-        player_list = set_start_player(self.players, self.game_opt.start_player, *self.scoreboard.get_won_sets_and_legs())
+        player_list = set_start_player(
+            self.players,
+            self.game_opt.start_player,
+            *self.scoreboard.get_won_sets_and_legs())
         while player_int < len(player_list):
             undo_player = False
             player = player_list[player_int]
-            self.ui.write(f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
+            self.ui.write(
+                f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
             while dart < self.game_opt.input_method.value:
-                throw_return, throw = self.ui.read_throw(f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: ")
+                throw_return, throw = self.ui.read_throw(
+                    f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: ")
                 if throw_return == ThrowReturn.EXIT:
                     sys.exit(f"The game was canceled")
                 elif throw_return == ThrowReturn.UNDO:
@@ -56,14 +72,15 @@ class Darts():
                             break
                         dart -= 1
                     continue
-                remaining_score = self.scoreboard.get_remaining_score_of_player(player)
+                remaining_score = self.scoreboard.get_remaining_score_of_player(
+                    player)
                 self.scoreboard.add_throw(player, throw)
                 dart += 1
-                if remaining_score == throw.calc_score() :
+                if remaining_score == throw.calc_score():
                     return self.scoreboard.is_win("game", player, throw)
                 elif remaining_score < throw.calc_score():
                     self.ui.overthrow()
-                
+
             if undo_player:
                 dart = self.game_opt.input_method.value - 1
                 if player_int > 0:

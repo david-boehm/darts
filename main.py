@@ -4,6 +4,7 @@ import sys
 from src.cli import CLI
 from src.darts import Darts
 
+
 def main() -> None:
     ui = CLI()
     players = ui.read_players()
@@ -12,6 +13,7 @@ def main() -> None:
     game_opt = ui.read_game_options(players)
     game = Darts(ui, players, game_opt)
     game.play()
+
 
 if __name__ == "__main__":
     main()
