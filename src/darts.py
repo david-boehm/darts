@@ -6,12 +6,9 @@ from src.scoreboard import Scoreboard
 from src.general.throw import Throw
 
 
-def set_start_player(players: list[str],
-                     start_player: int,
-                     sets: dict[str,
-                                int],
-                     legs: dict[str,
-                                int]) -> list[str]:
+def set_start_player(
+    players: list[str], start_player: int, sets: dict[str, int], legs: dict[str, int]
+) -> list[str]:
     # sets, legs = self.scoreboard.get_won_sets_and_legs()
     shift_legs = sum(legs.values()) % len(players)
     shift_sets = sum(sets.values()) % len(players)
@@ -23,12 +20,8 @@ def set_start_player(players: list[str],
     return rotated_players
 
 
-class Darts():
-    def __init__(
-            self,
-            ui: CLI,
-            players: list[str],
-            game_opt: GameOptions) -> None:
+class Darts:
+    def __init__(self, ui: CLI, players: list[str], game_opt: GameOptions) -> None:
         self.ui = ui
         self.scoreboard = Scoreboard(game_opt)
         self.players = players
@@ -54,15 +47,18 @@ class Darts():
         player_list = set_start_player(
             self.players,
             self.game_opt.start_player,
-            *self.scoreboard.get_won_sets_and_legs())
+            *self.scoreboard.get_won_sets_and_legs(),
+        )
         while player_int < len(player_list):
             undo_player = False
             player = player_list[player_int]
             self.ui.write(
-                f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): ")
+                f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): "
+            )
             while dart < self.game_opt.input_method.value:
                 throw_return, throw = self.ui.read_throw(
-                    f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: ")
+                    f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: "
+                )
                 if throw_return == ThrowReturn.EXIT:
                     sys.exit(f"The game was canceled")
                 elif throw_return == ThrowReturn.UNDO:
@@ -72,8 +68,7 @@ class Darts():
                             break
                         dart -= 1
                     continue
-                remaining_score = self.scoreboard.get_remaining_score_of_player(
-                    player)
+                remaining_score = self.scoreboard.get_remaining_score_of_player(player)
                 self.scoreboard.add_throw(player, throw)
                 dart += 1
                 if remaining_score == throw.calc_score():

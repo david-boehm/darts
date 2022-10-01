@@ -19,8 +19,8 @@ def get_os() -> Optional[str]:
 
 
 def get_console_clear() -> str:
-    for os, clear in IMPLEMENTED_OS.items():
-        if system() == os:
+    for known_os, clear in IMPLEMENTED_OS.items():
+        if system() == known_os:
             return clear
     raise NotImplementedError(f"{system()} clear cmd not implemented")
 
