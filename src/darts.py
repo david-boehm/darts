@@ -56,11 +56,12 @@ class Darts:
                 f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): "
             )
             while dart < self.game_opt.input_method.value:
+                remaining_score = self.scoreboard.get_remaining_score_of(player)
                 throw_return, throw = self.ui.read_throw(
-                    f"{player} requires: {self.scoreboard.get_remaining_score_of_player(player)} - Dart {dart+1}: "
+                    f"{player} requires: {remaining_score} - Dart {dart+1}: "
                 )
                 if throw_return == ThrowReturn.EXIT:
-                    sys.exit(f"The game was canceled")
+                    sys.exit("The game was canceled")
                 elif throw_return == ThrowReturn.UNDO:
                     if self.scoreboard.undo_throw():
                         if dart == 0:
@@ -68,7 +69,6 @@ class Darts:
                             break
                         dart -= 1
                     continue
-                remaining_score = self.scoreboard.get_remaining_score_of_player(player)
                 self.scoreboard.add_throw(player, throw)
                 dart += 1
                 if remaining_score == throw.calc_score():
