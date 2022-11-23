@@ -25,7 +25,7 @@ def get_console_clear() -> str:
     raise NotImplementedError(f"{system()} clear cmd not implemented")
 
 
-class CLI():
+class CLI:
     def __init__(self) -> None:
         self.cmd_clear = get_console_clear()
 

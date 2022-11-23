@@ -1,6 +1,6 @@
 import sys
 
-from src.cli import CLI
+from src.ui import UI
 from src.game_options import GameOptions, GameMode, ThrowReturn
 from src.scoreboard import Scoreboard
 from src.general.throw import Throw
@@ -21,7 +21,7 @@ def set_start_player(
 
 
 class Darts:
-    def __init__(self, ui: CLI, players: list[str], game_opt: GameOptions) -> None:
+    def __init__(self, ui: UI, players: list[str], game_opt: GameOptions) -> None:
         self.ui = ui
         self.scoreboard = Scoreboard(game_opt)
         self.players = players

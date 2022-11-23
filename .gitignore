@@ -1,3 +1,5 @@
+Pipfile*
+
 # custom .gitignore 
 *.json
 *.yaml
