@@ -30,8 +30,7 @@ class Darts:
         # self.ui.write(f"Game options {self.game_opt}")
 
     def play(self) -> None:
-        self.ui.display_game_options(self.game_opt)
-        self.ui.write("--- Game on! ---")
+        self.ui.display_game_start(self.game_opt)
         if self.game_opt.game_mode == GameMode.X01:
             game_won = False
             for player in self.players:
@@ -52,13 +51,11 @@ class Darts:
         while player_int < len(player_list):
             undo_player = False
             player = player_list[player_int]
-            self.ui.write(
-                f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): "
-            )
+            self.ui.display_new_round(player, self.game_opt.input_method)
             while dart < self.game_opt.input_method.value:
                 remaining_score = self.scoreboard.get_remaining_score_of(player)
                 throw_return, throw = self.ui.read_throw(
-                    f"{player} requires: {remaining_score} - Dart {dart+1}: "
+                    player, remaining_score, dart
                 )
                 if throw_return == ThrowReturn.EXIT:
                     sys.exit("The game was canceled")

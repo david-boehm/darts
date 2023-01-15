@@ -3,7 +3,15 @@ from typing import Optional
 from platform import system
 
 from src.scoreboard import Stats
-from src.game_options import GameOptions, GameMode, CheckInOut, SetLegMode, InputMethod, ThrowReturn, load_game_opt_from_file
+from src.game_options import (
+    GameOptions,
+    GameMode,
+    CheckInOut,
+    SetLegMode,
+    InputMethod,
+    ThrowReturn,
+    load_game_opt_from_file,
+)
 from src.general.throw import Throw
 
 ABORT_MSG = ["exit", "abort", "quit", "stop", "end"]
@@ -30,12 +38,13 @@ class CLI:
         self.cmd_clear = get_console_clear()
 
     def write(self, message: str) -> None:
-        print(f"{message}")
+        print(message)
 
-    def display_scoreboard(
-            self,
-            stats: list[Stats],
-            clear_screen: bool = True) -> None:
+    def display_game_start(self, game_opt: GameOptions) -> None:
+        self.display_game_options(game_opt)
+        self.write("--- Game on! ---")
+
+    def display_scoreboard(self, stats: list[Stats], clear_screen: bool = True) -> None:
         if clear_screen:
             os.system(self.cmd_clear)
         dashes = 15
@@ -97,10 +106,14 @@ class CLI:
         game_opt.save_to_file()
         return game_opt
 
-    def read_throw(self, message: str) -> tuple[ThrowReturn, Throw]:
+    def read_throw(
+        self, player: str, remaining_score: int, dart: int
+    ) -> tuple[ThrowReturn, Throw]:
         while True:
             try:
-                user_input = input(message)
+                user_input = input(
+                    f"{player} requires: {remaining_score} - Dart {dart+1}: "
+                )
                 if user_input.lower() in ABORT_MSG:
                     return ThrowReturn.EXIT, Throw("0")
                 elif user_input.lower() in UNDO:
@@ -110,3 +123,10 @@ class CLI:
                 return ThrowReturn.THROW, throw
             except ValueError as err:
                 print(f"Wrong input: {err}")
+
+    def display_new_round(self, player: str, input_method: InputMethod) -> None:
+        if input_method == InputMethod.THREEDARTS:
+            msg = f"\nDarts of {player} - (prefix d for double or t for tripple + Number, eg t20): "
+        else:
+            raise NotImplementedError("Input method '{input_method}'' not supported")
+        self.write(msg)
