@@ -2,7 +2,7 @@ import pytest
 
 from src.darts import Darts, set_start_player
 from src.scoreboard import Stats
-from src.game_options import GameOptions, ThrowReturn
+from src.game_options import GameOptions, ThrowReturn, CheckInOut
 from src.general.throw import Throw
 
 
@@ -86,25 +86,31 @@ class TestingUI:
         return ThrowReturn.THROW, throw
 
 
-players = ["test1"]
+straight_out = GameOptions()
+straight_out.legs = 1
+straight_out.check_out = CheckInOut.STRAIGHT
 double_out = GameOptions()
 double_out.legs = 1
-played_darts = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "12"]
+double_out.check_out = CheckInOut.DOUBLE
 
-test_game_data: list[tuple[list[str], GameOptions, list[str], str, bool]] = [
-    (players, double_out, played_darts, "d6", True),
-    (players, double_out, played_darts, "12", False),
+
+test_game_data: list[tuple[GameOptions, str, bool]] = [
+    (double_out, "d6", True),
+    (double_out, "12", False),
+    (straight_out, "12", True),
+    (straight_out, "d6", True),
+    (straight_out, "t4", True),
 ]
 
 
-@pytest.mark.parametrize("players,game_opt,played_darts,last_dart,result", test_game_data)
+@pytest.mark.parametrize("game_opt,last_dart,result", test_game_data)
 def test_darts(
-    players: list[str],
     game_opt: GameOptions,
-    played_darts: list[str],
     last_dart: str,
     result: bool
 ) -> None:
+    players = ["test_player"]
+    played_darts = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "12"]
     game = Darts(TestingUI(last_dart), players, game_opt)
     for player in players:
         game.scoreboard.register_player(player)
