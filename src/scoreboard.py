@@ -41,7 +41,8 @@ class Scoreboard:
         self.won_legs[player] = 0
         self.won_sets[player] = 0
 
-    def add_throw(self, player: str, throw: Throw) -> None:
+    def add_throw(self, player: str, throw: Throw) -> bool:
+        is_leg_win = False
         self.history[-1][-1].append(
             Turn(
                 player=player,
@@ -55,10 +56,12 @@ class Scoreboard:
             self.where_leg_won.append(len(self.history) + 1)
             self.history[-1].append([])
             self.won_legs[player] += 1
+            is_leg_win = True
         if self.is_win("set", player):
             self.history.append([[]])
             self.reset_legs()
             self.won_sets[player] += 1
+        return is_leg_win
 
     def is_win(self, asked: str, player: str) -> bool:
         if asked == "leg":
@@ -68,6 +71,14 @@ class Scoreboard:
         elif asked == "game":
             return self.get_won_sets_of(player) >= self.game_opt.sets
         raise ValueError(f"Cannot determine if is_win() with input '{asked}'")
+
+    def is_overthrow(self, player: str) -> bool:
+        last_turn = self.get_last_turn_of_leg(player)
+        if not last_turn:
+            return False
+        elif last_turn.score < last_turn.throw.calc_score():
+            return True
+        return False
 
     def undo_throw(self) -> bool:
         if (

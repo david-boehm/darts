@@ -69,11 +69,11 @@ class Darts:
                             break
                         dart -= 1
                     continue
-                self.scoreboard.add_throw(player, throw)
+                is_leg_win = self.scoreboard.add_throw(player, throw)
                 dart += 1
-                if remaining_score == throw.calc_score():
+                if is_leg_win:
                     return self.scoreboard.is_win("game", player)
-                elif remaining_score < throw.calc_score():
+                elif self.scoreboard.is_overthrow(player):
                     self.ui.overthrow()
 
             if undo_player:
