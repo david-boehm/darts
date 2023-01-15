@@ -72,7 +72,7 @@ class Darts:
                 self.scoreboard.add_throw(player, throw)
                 dart += 1
                 if remaining_score == throw.calc_score():
-                    return self.scoreboard.is_win("game", player, throw)
+                    return self.scoreboard.is_win("game", player)
                 elif remaining_score < throw.calc_score():
                     self.ui.overthrow()
 

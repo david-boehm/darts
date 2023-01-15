@@ -51,23 +51,23 @@ class Scoreboard:
                 won_legs=self.won_legs[player],
             )
         )
-        if self.is_win("leg", player, throw):
+        if self.is_win("leg", player):
             self.where_leg_won.append(len(self.history) + 1)
             self.history[-1].append([])
             self.won_legs[player] += 1
-        if self.is_win("set", player, throw):
+        if self.is_win("set", player):
             self.history.append([[]])
             self.reset_legs()
             self.won_sets[player] += 1
 
-    def is_win(self, asked: str, player: str, throw: Throw) -> bool:
+    def is_win(self, asked: str, player: str) -> bool:
         if asked == "leg":
             return self.get_remaining_score_of(player) == 0
         elif asked == "set":
             return self.get_won_legs_of(player) >= self.game_opt.legs
         elif asked == "game":
             return self.get_won_sets_of(player) >= self.game_opt.sets
-        raise ValueError("Cannot determine if is_win()")
+        raise ValueError(f"Cannot determine if is_win() with input '{asked}'")
 
     def undo_throw(self) -> bool:
         if (
@@ -135,12 +135,16 @@ class Scoreboard:
     def subtract(self, score: int, throw: Throw) -> int:
         # subtracting with respect to the chosen game options
         prefix, _ = throw.get_and_strip_prefix()
-        if self.game_opt.check_out == CheckInOut.DOUBLE:
-            remaining = score - throw.calc_score()
-            if remaining < 0 or remaining == 0 and not prefix == "d" or remaining == 1:
-                return score
-            return remaining
-        raise NotImplementedError("Checkoutmethod not implemented")
+        remaining = score - throw.calc_score()
+        if remaining < 0:
+            return score
+        elif remaining == 0:
+            if self.game_opt.check_out == CheckInOut.DOUBLE:
+                if prefix != "d":
+                    return score
+            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
+                raise NotImplementedError("Checkoutmethod not implemented")
+        return remaining
 
     def calc_average_of(self, player: str) -> float:
         darts = 0

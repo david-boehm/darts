@@ -87,33 +87,46 @@ class TestingUI:
 
 
 straight_out = GameOptions()
+straight_out.sets = 1
 straight_out.legs = 1
 straight_out.check_out = CheckInOut.STRAIGHT
 double_out = GameOptions()
+straight_out.sets = 1
 double_out.legs = 1
 double_out.check_out = CheckInOut.DOUBLE
+played_darts_even = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "12"]
+played_darts_odd = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "11"]
 
 
-test_game_data: list[tuple[GameOptions, str, bool]] = [
-    (double_out, "d6", True),
-    (double_out, "12", False),
-    (straight_out, "12", True),
-    (straight_out, "d6", True),
-    (straight_out, "t4", True),
+test_game_data: list[tuple[GameOptions, list[str], str, bool]] = [
+    (straight_out, played_darts_even, "12", True),
+    (straight_out, played_darts_even, "d6", True),
+    (straight_out, played_darts_even, "t4", True),
+    (straight_out, played_darts_even, "11", False),
+    (straight_out, played_darts_even, "13", False),
+    (straight_out, played_darts_even, "d5", False),
+    (straight_out, played_darts_even, "d7", False),
+    (double_out, played_darts_even, "d6", True),
+    (double_out, played_darts_even, "12", False),
+    (double_out, played_darts_even, "d8", False),
+    (double_out, played_darts_even, "13", False),
+    (double_out, played_darts_even, "11", False),
+    (double_out, played_darts_even, "d5", False),
+    (double_out, played_darts_odd, "12", False),
+    (double_out, played_darts_odd, "d6", False),
+    (double_out, played_darts_odd, "13", False),
 ]
 
 
-@pytest.mark.parametrize("game_opt,last_dart,result", test_game_data)
+@pytest.mark.parametrize("game_opt,played_darts,last_dart,result", test_game_data)
 def test_darts(
-    game_opt: GameOptions,
-    last_dart: str,
-    result: bool
+    game_opt: GameOptions, played_darts: list[str], last_dart: str, result: bool
 ) -> None:
     players = ["test_player"]
-    played_darts = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "12"]
     game = Darts(TestingUI(last_dart), players, game_opt)
     for player in players:
         game.scoreboard.register_player(player)
-    for dart in played_darts:
-        game.scoreboard.add_throw(players[0], Throw(dart))
+        for dart in played_darts:
+            game.scoreboard.add_throw(player, Throw(dart))
+    print(game.scoreboard.get_history())
     assert game.do_X01_round() == result
