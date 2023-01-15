@@ -2,7 +2,7 @@ import pytest
 
 from src.darts import Darts, set_start_player
 from src.scoreboard import Stats
-from src.game_options import GameOptions, ThrowReturn, CheckInOut
+from src.game_options import GameOptions, ThrowReturn, CheckInOut, InputMethod
 from src.general.throw import Throw
 
 
@@ -65,6 +65,9 @@ class TestingUI:
     def write(self, message: str) -> None:
         pass
 
+    def display_game_start(self, game_opt: GameOptions) -> None:
+        pass
+
     def display_scoreboard(self, stats: list[Stats], clear_screen: bool = True) -> None:
         pass
 
@@ -80,10 +83,15 @@ class TestingUI:
     def read_game_options(self, players: list[str]) -> GameOptions:
         return GameOptions()
 
-    def read_throw(self, message: str) -> tuple[ThrowReturn, Throw]:
+    def read_throw(
+        self, player: str, remaining_score: int, dart: int
+    ) -> tuple[ThrowReturn, Throw]:
         throw = Throw(self.last_dart)
         throw.is_valid_input()
         return ThrowReturn.THROW, throw
+
+    def display_new_round(self, player: str, input_method: InputMethod) -> None:
+        pass
 
 
 straight_out = GameOptions()
