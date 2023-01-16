@@ -2,7 +2,7 @@
 import sys
 
 from src.cli import CLI
-from src.darts import Darts
+from src.darts import XOhOne
 
 
 def main() -> None:
@@ -11,7 +11,7 @@ def main() -> None:
     if not len(players):
         sys.exit("The game was canceled, no players found")
     game_opt = ui.read_game_options(players)
-    game = Darts(ui, players, game_opt)
+    game = XOhOne(ui, players, game_opt)
     game.play()
 
 

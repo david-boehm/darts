@@ -1,6 +1,6 @@
 import pytest
 
-from src.darts import Darts, set_start_player
+from src.darts import XOhOne, set_start_player
 from src.scoreboard import Stats
 from src.game_options import GameOptions, ThrowReturn, CheckInOut, InputMethod
 from src.general.throw import Throw
@@ -126,15 +126,15 @@ test_game_data: list[tuple[GameOptions, list[str], str, bool]] = [
 ]
 
 
-@pytest.mark.parametrize("game_opt,played_darts,last_dart,result", test_game_data)
+@pytest.mark.parametrize("game_opt,played_darts,last_dart,game_win", test_game_data)
 def test_darts(
-    game_opt: GameOptions, played_darts: list[str], last_dart: str, result: bool
+    game_opt: GameOptions, played_darts: list[str], last_dart: str, game_win: bool
 ) -> None:
     players = ["test_player"]
-    game = Darts(TestingUI(last_dart), players, game_opt)
+    game = XOhOne(TestingUI(last_dart), players, game_opt)
     for player in players:
         game.scoreboard.register_player(player)
         for dart in played_darts:
             game.scoreboard.add_throw(player, Throw(dart))
     print(game.scoreboard.get_history())
-    assert game.do_X01_round() == result
+    assert game.do_player_round() == game_win
