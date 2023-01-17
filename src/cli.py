@@ -87,7 +87,7 @@ class CLI:
                 header += f"{field.capitalize()}" + "\t" * tabs_after_name
             else:
                 header += f"{field.capitalize()}\t"
-        max_tabs_in_player_line = header.count("\t") 
+        max_tabs_in_player_line = header.count("\t")
         player_lines: list[str] = []
         for player_stats in statistics:
             to_print = ""
@@ -105,10 +105,10 @@ class CLI:
             player_lines.append(to_print)
 
             if to_print.count("\t") > max_tabs_in_player_line:
-                max_tabs_in_player_line = to_print.count("\t") 
+                max_tabs_in_player_line = to_print.count("\t")
 
         title = " Scoreboard "  # needs to be even number
-        dashes = (max_tabs_in_player_line*8 - len(title)) // 2
+        dashes = (max_tabs_in_player_line * 8 - len(title)) // 2
 
         self.write(dashes * "-" + title + dashes * "-")
         self.write(header)
@@ -118,7 +118,8 @@ class CLI:
         self.display_input_help(input_method)
         for turn in reversed(last_turns):
             self.write(
-                f"{turn.player} requires: {turn.score} - Dart X: {turn.throw.input_score}"
+                f"{turn.player} requires: {turn.score}"
+                f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score}"
             )
 
     def display_game_options(self, game_opt: GameOptions) -> None:

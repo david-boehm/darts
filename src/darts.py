@@ -29,12 +29,11 @@ class XOhOne:
             self.scoreboard.register_player(player_name)
         self.ui.display_game_start(self.game_opt)
         while not self.do_player_round():  # game not won
-            ...
-        print(self.scoreboard.get_history())
+            ...  # Do some stuff if more than two are playing
 
     def do_player_round(self) -> bool:
         player = 0
-        dart = 0
+        throw_in_round = 0
         players = set_start_player(
             self.players,
             self.game_opt.start_player,
@@ -42,40 +41,42 @@ class XOhOne:
         )
         while player < len(players):
             undo_player = False
-            while dart < self.game_opt.input_method.value:
+            while throw_in_round < self.game_opt.input_method.value:
                 self.ui.display_scoreboard(
                     self.scoreboard.get_all_stats(),
-                    self.scoreboard.get_turns_of_leg()[0:3*player+dart],
+                    self.scoreboard.get_turns_of_leg()[0 : 3 * player + throw_in_round],
                     self.game_opt.input_method,
                 )
                 throw_return, throw = self.ui.read_throw(
                     players[player],
                     self.scoreboard.get_remaining_score_of(players[player]),
-                    dart,
+                    throw_in_round,
                 )
                 if throw_return == ThrowReturn.EXIT:
                     sys.exit("The game was canceled")
                 elif throw_return == ThrowReturn.UNDO:
                     if self.scoreboard.undo_throw():
-                        if dart == 0:
+                        if throw_in_round == 0:
                             undo_player = True
                             break
-                        dart -= 1
+                        throw_in_round -= 1
                     continue
-                is_leg_win = self.scoreboard.add_throw(players[player], throw)
-                dart += 1
+                is_leg_win = self.scoreboard.add_throw(
+                    players[player], throw, throw_in_round
+                )
+                throw_in_round += 1
                 if is_leg_win:
                     return self.scoreboard.is_win("game", players[player])
                 elif self.scoreboard.is_overthrow(players[player]):
                     self.ui.overthrow()
 
             if undo_player:
-                dart = self.game_opt.input_method.value - 1
+                throw_in_round = self.game_opt.input_method.value - 1
                 if player > 0:
                     player -= 1
                 else:
                     player = len(players) - 1
             else:
                 player += 1
-                dart = 0
+                throw_in_round = 0
         return False

@@ -19,6 +19,7 @@ class Turn:
     player: str
     score: int
     throw: Throw
+    throw_in_round: int = 0
 
 
 class Scoreboard:
@@ -30,12 +31,13 @@ class Scoreboard:
     def register_player(self, player: str) -> None:
         self.players.append(player)
 
-    def add_throw(self, player: str, throw: Throw) -> bool:
+    def add_throw(self, player: str, throw: Throw, throw_in_round: int) -> bool:
         self.history[-1][-1].append(
             Turn(
                 player=player,
                 score=self.get_remaining_score_of(player),
                 throw=throw,
+                throw_in_round=throw_in_round
             )
         )
         if self.is_win("set", player):
@@ -45,6 +47,20 @@ class Scoreboard:
             self.history[-1].append([])
             return True
         return False
+
+    def subtract(self, score: int, throw: Throw) -> int:
+        # subtracting with respect to the chosen game options
+        prefix, _ = throw.get_and_strip_prefix()
+        remaining = score - throw.calc_score()
+        if remaining < 0:
+            return score
+        elif remaining == 0:
+            if self.game_opt.check_out == CheckInOut.DOUBLE:
+                if prefix != "d":
+                    return score
+            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
+                raise NotImplementedError("Checkoutmethod not implemented")
+        return remaining
 
     def is_win(self, asked: str, player: str) -> bool:
         if asked == "leg":
@@ -108,20 +124,6 @@ class Scoreboard:
         if not last_turn:
             return self.game_opt.start_points
         return self.subtract(last_turn.score, last_turn.throw)
-
-    def subtract(self, score: int, throw: Throw) -> int:
-        # subtracting with respect to the chosen game options
-        prefix, _ = throw.get_and_strip_prefix()
-        remaining = score - throw.calc_score()
-        if remaining < 0:
-            return score
-        elif remaining == 0:
-            if self.game_opt.check_out == CheckInOut.DOUBLE:
-                if prefix != "d":
-                    return score
-            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
-                raise NotImplementedError("Checkoutmethod not implemented")
-        return remaining
 
     def get_won_sets_of(self, player: str) -> int:
         won_sets = 0
