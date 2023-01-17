@@ -1,9 +1,7 @@
-from typing import Optional, Union
+from typing import Optional
 from dataclasses import dataclass
 from src.game_options import GameOptions, CheckInOut
 from src.general.throw import Throw
-
-Num = Union[int, float]
 
 
 @dataclass
@@ -12,8 +10,8 @@ class Stats:
     sets: int = 0
     legs: int = 0
     score: int = 0
-    average: float = 0
     darts: int = 0
+    average: float = 0
 
 
 @dataclass
@@ -21,47 +19,32 @@ class Turn:
     player: str
     score: int
     throw: Throw
-    won_sets: int = 0
-    won_legs: int = 0
-    leg_breaks: int = 0
-    set_breaks: int = 0
 
 
 class Scoreboard:
     def __init__(self, game_opt: GameOptions):
         self.game_opt = game_opt
         self.players: list[str] = []
-        self.won_legs: dict[str, int] = {}
-        self.won_sets: dict[str, int] = {}
         self.history: list[list[list[Turn]]] = [[[]]]
-        self.where_leg_won: list[int] = [0]
 
     def register_player(self, player: str) -> None:
         self.players.append(player)
-        self.won_legs[player] = 0
-        self.won_sets[player] = 0
 
     def add_throw(self, player: str, throw: Throw) -> bool:
-        is_leg_win = False
         self.history[-1][-1].append(
             Turn(
                 player=player,
                 score=self.get_remaining_score_of(player),
                 throw=throw,
-                won_sets=self.won_sets[player],
-                won_legs=self.won_legs[player],
             )
         )
-        if self.is_win("leg", player):
-            self.where_leg_won.append(len(self.history) + 1)
-            self.history[-1].append([])
-            self.won_legs[player] += 1
-            is_leg_win = True
         if self.is_win("set", player):
             self.history.append([[]])
-            self.reset_legs()
-            self.won_sets[player] += 1
-        return is_leg_win
+            return True
+        if self.is_win("leg", player):
+            self.history[-1].append([])
+            return True
+        return False
 
     def is_win(self, asked: str, player: str) -> bool:
         if asked == "leg":
@@ -76,8 +59,10 @@ class Scoreboard:
         last_turn = self.get_last_turn_of_leg(player)
         if not last_turn:
             return False
-        elif last_turn.score < last_turn.throw.calc_score():
+        if last_turn.throw.calc_score() > last_turn.score:
             return True
+        if self.game_opt.check_out == CheckInOut.DOUBLE:
+            return last_turn.score - last_turn.throw.calc_score() == 1
         return False
 
     def undo_throw(self) -> bool:
@@ -94,14 +79,12 @@ class Scoreboard:
         self.history[-1][-1].pop()
         return True
 
-    def reset_legs(self) -> None:
-        for player in [*self.won_legs]:
-            self.won_legs[player] = 0
-
     def get_history(self) -> list[list[list[Turn]]]:
         return self.history
 
-    def get_turns_of_leg(self, dset: int = -1, leg: int = -1, nr_throws: int = -1) -> list[Turn]:
+    def get_turns_of_leg(
+        self, dset: int = -1, leg: int = -1, nr_throws: int = -1
+    ) -> list[Turn]:
         last_turns: list[Turn] = []
         if nr_throws < 0:
             nr_throws = len(self.players) * 3 - 1
@@ -125,7 +108,20 @@ class Scoreboard:
         if not last_turn:
             return self.game_opt.start_points
         return self.subtract(last_turn.score, last_turn.throw)
-        raise ValueError("Could not calculate remaining score")
+
+    def subtract(self, score: int, throw: Throw) -> int:
+        # subtracting with respect to the chosen game options
+        prefix, _ = throw.get_and_strip_prefix()
+        remaining = score - throw.calc_score()
+        if remaining < 0:
+            return score
+        elif remaining == 0:
+            if self.game_opt.check_out == CheckInOut.DOUBLE:
+                if prefix != "d":
+                    return score
+            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
+                raise NotImplementedError("Checkoutmethod not implemented")
+        return remaining
 
     def get_won_sets_of(self, player: str) -> int:
         won_sets = 0
@@ -152,23 +148,6 @@ class Scoreboard:
             player: self.get_won_legs_of(player) for player in self.players
         }
 
-    def get_won_sets_and_legs_of_player(self, player: str) -> tuple[int, int]:
-        return self.get_won_sets_of(player), self.get_won_legs_of(player)
-
-    def subtract(self, score: int, throw: Throw) -> int:
-        # subtracting with respect to the chosen game options
-        prefix, _ = throw.get_and_strip_prefix()
-        remaining = score - throw.calc_score()
-        if remaining < 0:
-            return score
-        elif remaining == 0:
-            if self.game_opt.check_out == CheckInOut.DOUBLE:
-                if prefix != "d":
-                    return score
-            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
-                raise NotImplementedError("Checkoutmethod not implemented")
-        return remaining
-
     def average_darts_of(self, player: str) -> tuple[float, int]:
         darts = 0
         thrown_total = 0
@@ -181,7 +160,7 @@ class Scoreboard:
                     darts += 1
         if not darts:
             return 0, darts
-        return thrown_total / darts, darts
+        return thrown_total / darts * 3, darts
 
     def get_all_stats(self) -> list[Stats]:
         all_stats = []

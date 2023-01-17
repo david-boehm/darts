@@ -8,11 +8,9 @@ from src.scoreboard import Scoreboard
 def set_start_player(
     players: list[str], start_player: int, sets: dict[str, int], legs: dict[str, int]
 ) -> list[str]:
-    # sets, legs = self.scoreboard.get_won_sets_and_legs()
+
     shift_legs = sum(legs.values()) % len(players)
     shift_sets = sum(sets.values()) % len(players)
-    # if shift_sets + shift_legs + start_player == len(players):
-    #   return players
     rotated_players = players.copy()
     for i in range((shift_sets + shift_legs + start_player) % len(players)):
         rotated_players.append(rotated_players.pop(0))
@@ -32,6 +30,7 @@ class XOhOne:
         self.ui.display_game_start(self.game_opt)
         while not self.do_player_round():  # game not won
             ...
+        print(self.scoreboard.get_history())
 
     def do_player_round(self) -> bool:
         player = 0
