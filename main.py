@@ -3,6 +3,7 @@ import sys
 
 from src.cli import CLI
 from src.darts import XOhOne
+from src.game_options import GameMode
 
 
 def main() -> None:
@@ -11,7 +12,8 @@ def main() -> None:
     if not len(players):
         sys.exit("The game was canceled, no players found")
     game_opt = ui.read_game_options(players)
-    game = XOhOne(ui, players, game_opt)
+    if game_opt.game_mode == GameMode.XOhOne:
+        game = XOhOne(ui, players, game_opt)
     game.play()
 
 

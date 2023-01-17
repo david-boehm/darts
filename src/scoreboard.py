@@ -101,6 +101,18 @@ class Scoreboard:
     def get_history(self) -> list[list[list[Turn]]]:
         return self.history
 
+    def get_turns_of_leg(self, dset: int = -1, leg: int = -1, nr_throws: int = -1) -> list[Turn]:
+        last_turns: list[Turn] = []
+        if nr_throws < 0:
+            nr_throws = len(self.players) * 3 - 1
+        reversed_leg_history = iter(reversed(self.history[dset][leg]))
+        for _ in range(nr_throws):
+            turn = next(reversed_leg_history, None)
+            if not turn:
+                break
+            last_turns.append(turn)
+        return last_turns
+
     def get_last_turn_of_leg(self, player: str) -> Optional[Turn]:
         last_turn = next(
             (turn for turn in reversed(self.history[-1][-1]) if turn.player == player),
@@ -157,7 +169,7 @@ class Scoreboard:
                 raise NotImplementedError("Checkoutmethod not implemented")
         return remaining
 
-    def calc_average_of(self, player: str) -> float:
+    def average_darts_of(self, player: str) -> tuple[float, int]:
         darts = 0
         thrown_total = 0
         for dset in self.history:
@@ -168,18 +180,20 @@ class Scoreboard:
                     thrown_total += turn.throw.calc_score()
                     darts += 1
         if not darts:
-            return 0
-        return thrown_total / darts
+            return 0, darts
+        return thrown_total / darts, darts
 
     def get_all_stats(self) -> list[Stats]:
         all_stats = []
         for player in self.players:
+            average, thrown_darts = self.average_darts_of(player)
             player_stats = Stats(
                 player=player,
                 sets=self.get_won_sets_of(player),
                 legs=self.get_won_legs_of(player),
                 score=self.get_remaining_score_of(player),
-                average=self.calc_average_of(player),
+                average=average,
+                darts=thrown_darts,
             )
             all_stats.append(player_stats)
         return all_stats

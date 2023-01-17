@@ -1,7 +1,7 @@
 import pytest
 
 from src.darts import XOhOne, set_start_player
-from src.scoreboard import Stats
+from src.scoreboard import Stats, Turn
 from src.game_options import GameOptions, ThrowReturn, CheckInOut, InputMethod
 from src.general.throw import Throw
 
@@ -62,13 +62,16 @@ class TestingUI:
     def __init__(self, last_dart: str):
         self.last_dart = last_dart
 
-    def write(self, message: str) -> None:
-        pass
-
     def display_game_start(self, game_opt: GameOptions) -> None:
         pass
 
-    def display_scoreboard(self, stats: list[Stats], clear_screen: bool = True) -> None:
+    def display_scoreboard(
+        self,
+        stats: list[Stats],
+        last_turns: list[Turn],
+        input_method: InputMethod,
+        clear_screen: bool = True,
+    ) -> None:
         pass
 
     def display_game_options(self, game_opt: GameOptions) -> None:
@@ -77,21 +80,17 @@ class TestingUI:
     def overthrow(self) -> None:
         pass
 
+    def read_throw(
+        self, player: str, remaining_score: int, dart: int
+    ) -> tuple[ThrowReturn, Throw]:
+        throw = Throw(self.last_dart)
+        return ThrowReturn.THROW, throw
+
     def read_players(self) -> list[str]:
         return []
 
     def read_game_options(self, players: list[str]) -> GameOptions:
         return GameOptions()
-
-    def read_throw(
-        self, player: str, remaining_score: int, dart: int
-    ) -> tuple[ThrowReturn, Throw]:
-        throw = Throw(self.last_dart)
-        throw.is_valid_input()
-        return ThrowReturn.THROW, throw
-
-    def display_new_round(self, player: str, input_method: InputMethod) -> None:
-        pass
 
 
 straight_out = GameOptions()
@@ -126,9 +125,9 @@ test_game_data: list[tuple[GameOptions, list[str], str, bool]] = [
 ]
 
 
-@pytest.mark.parametrize("game_opt,played_darts,last_dart,game_win", test_game_data)
+@pytest.mark.parametrize("game_opt,played_darts,last_dart,result", test_game_data)
 def test_darts(
-    game_opt: GameOptions, played_darts: list[str], last_dart: str, game_win: bool
+    game_opt: GameOptions, played_darts: list[str], last_dart: str, result: bool
 ) -> None:
     players = ["test_player"]
     game = XOhOne(TestingUI(last_dart), players, game_opt)
@@ -137,4 +136,4 @@ def test_darts(
         for dart in played_darts:
             game.scoreboard.add_throw(player, Throw(dart))
     print(game.scoreboard.get_history())
-    assert game.do_player_round() == game_win
+    assert game.do_player_round() == result

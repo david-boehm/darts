@@ -1,6 +1,6 @@
 import os
 import json
-from enum import Enum, auto
+from enum import Enum
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
@@ -19,7 +19,7 @@ class ThrowReturn(Enum):
 
 
 class GameMode(Enum):
-    X01 = "X01"
+    XOhOne = "XOhOne"
 
     def __str__(self) -> str:
         return self.value
@@ -53,7 +53,7 @@ class InputMethod(Enum):
 @dataclass_json
 @dataclass
 class GameOptions:
-    game_mode: GameMode = GameMode.X01
+    game_mode: GameMode = GameMode.XOhOne
     sets: int = 1
     legs: int = 2
     start_points: int = 501

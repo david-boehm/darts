@@ -1,9 +1,8 @@
 import sys
 
 from src.ui import UI
-from src.game_options import GameOptions, GameMode, ThrowReturn
+from src.game_options import GameOptions, ThrowReturn
 from src.scoreboard import Scoreboard
-from src.general.throw import Throw
 
 
 def set_start_player(
@@ -26,19 +25,13 @@ class XOhOne:
         self.scoreboard = Scoreboard(game_opt)
         self.players = players
         self.game_opt = game_opt
-        # self.ui.write(f"players found: {self.players}")
-        # self.ui.write(f"Game options {self.game_opt}")
 
     def play(self) -> None:
+        for player_name in self.players:
+            self.scoreboard.register_player(player_name)
         self.ui.display_game_start(self.game_opt)
-        if self.game_opt.game_mode == GameMode.X01:
-            game_won = False
-            for player_name in self.players:
-                self.scoreboard.register_player(player_name)
-            self.ui.display_scoreboard(self.scoreboard.get_all_stats(), False)
-            while not game_won:
-                game_won = self.do_player_round()
-                self.ui.display_scoreboard(self.scoreboard.get_all_stats())
+        while not self.do_player_round():  # game not won
+            ...
 
     def do_player_round(self) -> bool:
         player = 0
@@ -50,8 +43,12 @@ class XOhOne:
         )
         while player < len(players):
             undo_player = False
-            self.ui.display_new_round(players[player], self.game_opt.input_method)
             while dart < self.game_opt.input_method.value:
+                self.ui.display_scoreboard(
+                    self.scoreboard.get_all_stats(),
+                    self.scoreboard.get_turns_of_leg()[0:3*player+dart],
+                    self.game_opt.input_method,
+                )
                 throw_return, throw = self.ui.read_throw(
                     players[player],
                     self.scoreboard.get_remaining_score_of(players[player]),
