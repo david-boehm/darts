@@ -22,6 +22,23 @@ class Turn:
     throw_in_round: int = 0
 
 
+def subtract(score: int, throw: Throw, check_out: CheckInOut) -> tuple[int, bool]:
+    # subtracting with respect to the chosen game GameOptions
+    prefix, _ = throw.get_and_strip_prefix()
+    remaining = score - throw.calc_score()
+    if remaining < 0:
+        return score, True
+    if check_out == CheckInOut.DOUBLE:
+        if remaining == 0:
+            if prefix != "d":
+                return score, True
+        elif remaining == 1:
+            return score, True
+    elif check_out != CheckInOut.STRAIGHT:
+        raise NotImplementedError("Checkoutmethod not implemented")
+    return remaining, False
+    
+
 class Scoreboard:
     def __init__(self, game_opt: GameOptions):
         self.game_opt = game_opt
@@ -37,7 +54,7 @@ class Scoreboard:
                 player=player,
                 score=self.get_remaining_score_of(player),
                 throw=throw,
-                throw_in_round=throw_in_round
+                throw_in_round=throw_in_round,
             )
         )
         if self.is_win("set", player):
@@ -48,20 +65,6 @@ class Scoreboard:
             return True
         return False
 
-    def subtract(self, score: int, throw: Throw) -> int:
-        # subtracting with respect to the chosen game options
-        prefix, _ = throw.get_and_strip_prefix()
-        remaining = score - throw.calc_score()
-        if remaining < 0:
-            return score
-        elif remaining == 0:
-            if self.game_opt.check_out == CheckInOut.DOUBLE:
-                if prefix != "d":
-                    return score
-            elif self.game_opt.check_out != CheckInOut.STRAIGHT:
-                raise NotImplementedError("Checkoutmethod not implemented")
-        return remaining
-
     def is_win(self, asked: str, player: str) -> bool:
         if asked == "leg":
             return self.get_remaining_score_of(player) == 0
@@ -70,16 +73,6 @@ class Scoreboard:
         elif asked == "game":
             return self.get_won_sets_of(player) >= self.game_opt.sets
         raise ValueError(f"Cannot determine if is_win() with input '{asked}'")
-
-    def is_overthrow(self, player: str) -> bool:
-        last_turn = self.get_last_turn_of_leg(player)
-        if not last_turn:
-            return False
-        if last_turn.throw.calc_score() > last_turn.score:
-            return True
-        if self.game_opt.check_out == CheckInOut.DOUBLE:
-            return last_turn.score - last_turn.throw.calc_score() == 1
-        return False
 
     def undo_throw(self) -> bool:
         if (
@@ -123,7 +116,8 @@ class Scoreboard:
         last_turn = self.get_last_turn_of_leg(player)
         if not last_turn:
             return self.game_opt.start_points
-        return self.subtract(last_turn.score, last_turn.throw)
+        remaining, _ = subtract(last_turn.score, last_turn.throw, self.game_opt.check_out)
+        return remaining
 
     def get_won_sets_of(self, player: str) -> int:
         won_sets = 0
@@ -139,9 +133,10 @@ class Scoreboard:
         for leg in self.history[dset]:
             if not len(leg):
                 continue
-            if leg[-1].player == player and not self.subtract(
-                leg[-1].score, leg[-1].throw
-            ):
+            remaining, _ = subtract(
+                leg[-1].score, leg[-1].throw, self.game_opt.check_out
+            )
+            if leg[-1].player == player and not remaining:
                 won_legs += 1
         return won_legs
 

@@ -3,7 +3,7 @@ from typing import Optional
 from platform import system
 import colorama
 
-from src.scoreboard import Stats, Turn
+from src.scoreboard import Stats, Turn, subtract
 from src.game_options import (
     GameOptions,
     InputMethod,
@@ -64,7 +64,7 @@ class CLI:
         self,
         statistics: list[Stats],
         last_turns: list[Turn],
-        input_method: InputMethod,
+        game_opt: GameOptions,
         clear_screen: bool = True,
     ) -> None:
         if clear_screen:
@@ -115,12 +115,16 @@ class CLI:
         for player in player_lines:
             self.write(player)
         self.write((2 * dashes + len(title)) * "-")
-        self.display_input_help(input_method)
+        self.display_input_help(game_opt.input_method)
         for turn in reversed(last_turns):
-            self.write(
+            previous_turn = (
                 f"{turn.player} requires: {turn.score}"
                 f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score}"
             )
+            _, is_overthrow = subtract(turn.score, turn.throw, game_opt.check_out)
+            if is_overthrow:
+                previous_turn += "  - Overthrow"
+            self.write(previous_turn)
 
     def display_game_options(self, game_opt: GameOptions) -> None:
         dashes = 15
@@ -129,9 +133,6 @@ class CLI:
             self.write(f"{key}: {value}")
         self.write((2 * dashes + 15) * "#")
         self.read("If options read press enter")
-
-    def overthrow(self) -> None:
-        self.write("Overthrow")
 
     def read_throw(
         self, player: str, remaining_score: int, dart: int

@@ -45,7 +45,7 @@ class XOhOne:
                 self.ui.display_scoreboard(
                     self.scoreboard.get_all_stats(),
                     self.scoreboard.get_turns_of_leg()[0 : 3 * player + throw_in_round],
-                    self.game_opt.input_method,
+                    self.game_opt,
                 )
                 throw_return, throw = self.ui.read_throw(
                     players[player],
@@ -67,8 +67,6 @@ class XOhOne:
                 throw_in_round += 1
                 if is_leg_win:
                     return self.scoreboard.is_win("game", players[player])
-                elif self.scoreboard.is_overthrow(players[player]):
-                    self.ui.overthrow()
 
             if undo_player:
                 throw_in_round = self.game_opt.input_method.value - 1

@@ -2,7 +2,7 @@ from typing import Protocol
 
 
 from src.scoreboard import Stats, Turn
-from src.game_options import GameOptions, ThrowReturn, InputMethod
+from src.game_options import GameOptions, ThrowReturn
 from src.general.throw import Throw
 
 
@@ -14,15 +14,12 @@ class UI(Protocol):
         self,
         stats: list[Stats],
         last_turns: list[Turn],
-        input_method: InputMethod,
+        input_method: GameOptions,
         clear_screen: bool = True,
     ) -> None:
         ...
 
     def display_game_options(self, game_opt: GameOptions) -> None:
-        ...
-
-    def overthrow(self) -> None:
         ...
 
     def read_throw(

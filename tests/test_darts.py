@@ -59,8 +59,8 @@ def test_set_start_player(
 
 
 class TestingUI:
-    def __init__(self, last_dart: str):
-        self.last_dart = last_dart
+    def __init__(self, last_throw: str):
+        self.last_throw = last_throw
 
     def display_game_start(self, game_opt: GameOptions) -> None:
         pass
@@ -77,14 +77,10 @@ class TestingUI:
     def display_game_options(self, game_opt: GameOptions) -> None:
         pass
 
-    def overthrow(self) -> None:
-        pass
-
     def read_throw(
         self, player: str, remaining_score: int, dart: int
     ) -> tuple[ThrowReturn, Throw]:
-        throw = Throw(self.last_dart)
-        return ThrowReturn.THROW, throw
+        return ThrowReturn.THROW, Throw(self.last_throw)
 
     def read_players(self) -> list[str]:
         return []
@@ -101,39 +97,37 @@ double_out = GameOptions()
 straight_out.sets = 1
 double_out.legs = 1
 double_out.check_out = CheckInOut.DOUBLE
-played_darts_even = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "12"]
-played_darts_odd = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "11"]
 
-
-test_game_data: list[tuple[GameOptions, list[str], str, bool]] = [
-    (straight_out, played_darts_even, "12", True),
-    (straight_out, played_darts_even, "d6", True),
-    (straight_out, played_darts_even, "t4", True),
-    (straight_out, played_darts_even, "11", False),
-    (straight_out, played_darts_even, "13", False),
-    (straight_out, played_darts_even, "d5", False),
-    (straight_out, played_darts_even, "d7", False),
-    (double_out, played_darts_even, "d6", True),
-    (double_out, played_darts_even, "12", False),
-    (double_out, played_darts_even, "d8", False),
-    (double_out, played_darts_even, "13", False),
-    (double_out, played_darts_even, "11", False),
-    (double_out, played_darts_even, "d5", False),
-    (double_out, played_darts_odd, "12", False),
-    (double_out, played_darts_odd, "d6", False),
-    (double_out, played_darts_odd, "13", False),
+test_game_data: list[tuple[GameOptions, str, str, bool]] = [
+    (straight_out, "12", "12", True),
+    (straight_out, "12", "d6", True),
+    (straight_out, "12", "t4", True),
+    (straight_out, "12", "11", False),
+    (straight_out, "12", "13", False),
+    (straight_out, "12", "d5", False),
+    (straight_out, "12", "d7", False),
+    (double_out, "12", "d6", True),
+    (double_out, "12", "12", False),
+    (double_out, "12", "d8", False),
+    (double_out, "12", "13", False),
+    (double_out, "12", "11", False),
+    (double_out, "12", "d5", False),
+    (double_out, "11", "12", False),
+    (double_out, "11", "d6", False),
+    (double_out, "11", "13", False),
 ]
 
 
-@pytest.mark.parametrize("game_opt,played_darts,last_dart,result", test_game_data)
+@pytest.mark.parametrize("game_opt,second_to_last_throw,last_throw,result", test_game_data)
 def test_darts(
-    game_opt: GameOptions, played_darts: list[str], last_dart: str, result: bool
+    game_opt: GameOptions, second_to_last_throw: str, last_throw: str, result: bool
 ) -> None:
     players = ["test_player"]
-    game = XOhOne(TestingUI(last_dart), players, game_opt)
+    to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
+    to_twenty_four.append(second_to_last_throw)
+    game = XOhOne(TestingUI(last_throw), players, game_opt)
     for player in players:
         game.scoreboard.register_player(player)
-        for dart in played_darts:
-            game.scoreboard.add_throw(player, Throw(dart))
-    print(game.scoreboard.get_history())
+        for dart in to_twenty_four:
+            game.scoreboard.add_throw(player, Throw(dart), 0)
     assert game.do_player_round() == result
