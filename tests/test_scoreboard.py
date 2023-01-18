@@ -1,5 +1,8 @@
 import pytest
-from src.scoreboard import set_start_player
+
+from src.scoreboard import Scoreboard, set_start_player, is_overthrow
+from src.game_options import GameOptions, CheckInOut
+from src.general.throw import Throw
 
 
 def rotate(players: list[str], rotations: int) -> list[str]:
@@ -52,3 +55,76 @@ def test_set_start_player(
     rotated_players: list[str],
 ) -> None:
     assert set_start_player(players, start_player, sets, legs) == rotated_players
+
+
+straight_out = GameOptions()
+straight_out.sets = 1
+straight_out.legs = 1
+straight_out.check_out = CheckInOut.STRAIGHT
+double_out = GameOptions()
+straight_out.sets = 1
+double_out.legs = 1
+double_out.check_out = CheckInOut.DOUBLE
+
+twenty_four_score: list[tuple[GameOptions, str, str, int, bool]] = [
+    (straight_out, "12", "12", 0, False),
+    (straight_out, "12", "d6", 0, False),
+    (straight_out, "12", "t4", 0, False),
+    (straight_out, "12", "11", 1, False),
+    (straight_out, "12", "d5", 2, False),
+    (straight_out, "12", "13", 12, True),
+    (straight_out, "12", "d7", 12, True),
+    (double_out, "12", "d6", 0, False),
+    (double_out, "12", "12", 12, True),
+    (double_out, "12", "d7", 12, True),
+    (double_out, "12", "13", 12, True),
+    (double_out, "12", "11", 12, True),
+    (double_out, "12", "d5", 2, False),
+    (double_out, "11", "12", 13, True),
+    (double_out, "11", "d6", 13, True),
+    (double_out, "11", "13", 13, True),
+]
+
+
+@pytest.mark.parametrize(
+    "game_options,second_to_last_throw,last_throw,remaining_score,_",
+    twenty_four_score,
+)
+def test_subtract(
+    game_options: GameOptions,
+    second_to_last_throw: str,
+    last_throw: str,
+    remaining_score: int,
+    _: bool,
+) -> None:
+    to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
+    to_twenty_four.extend([second_to_last_throw, last_throw])
+    scoreboard = Scoreboard(game_options)
+    scoreboard.register_player("player")
+    for dart in to_twenty_four:
+        scoreboard.add_throw("player", Throw(dart), 0)
+    assert scoreboard.get_remaining_score_of("player") == remaining_score
+
+
+@pytest.mark.parametrize(
+    "game_options,second_to_last_throw,last_throw,_,result",
+    twenty_four_score,
+)
+def test_is_overthrow(
+    game_options: GameOptions,
+    second_to_last_throw: str,
+    last_throw: str,
+    _: int,
+    result: bool,
+) -> None:
+    to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
+    to_twenty_four.extend([second_to_last_throw])
+    scoreboard = Scoreboard(game_options)
+    scoreboard.register_player("player")
+    for dart in to_twenty_four:
+        scoreboard.add_throw("player", Throw(dart), 0)
+    remaining_score = scoreboard.get_remaining_score_of("player")
+    assert (
+        is_overthrow(remaining_score, Throw(last_throw), game_options.check_out)
+        == result
+    )
