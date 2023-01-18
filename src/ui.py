@@ -14,7 +14,7 @@ class UI(Protocol):
         self,
         stats: list[Stats],
         last_turns: list[Turn],
-        input_method: GameOptions,
+        game_options: GameOptions,
         clear_screen: bool = True,
     ) -> None:
         ...

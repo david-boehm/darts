@@ -22,6 +22,18 @@ class Turn:
     throw_in_round: int = 0
 
 
+def set_start_player(
+    players: list[str], start_player: int, sets: dict[str, int], legs: dict[str, int]
+) -> list[str]:
+
+    shift_legs = sum(legs.values()) % len(players)
+    shift_sets = sum(sets.values()) % len(players)
+    rotated_players = players.copy()
+    for i in range((shift_sets + shift_legs + start_player) % len(players)):
+        rotated_players.append(rotated_players.pop(0))
+    return rotated_players
+
+
 def is_overthrow(score: int, throw: Throw, check_out: CheckInOut) -> bool:
     # subtracting with respect to the chosen game GameOptions
     prefix, _ = throw.get_and_strip_prefix()

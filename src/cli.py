@@ -45,8 +45,8 @@ class CLI:
         self.lines_to_delete += increment_lines
         return input(line)
 
-    def display_game_start(self, game_opt: GameOptions) -> None:
-        self.display_game_options(game_opt)
+    def display_game_start(self, game_options: GameOptions) -> None:
+        self.display_game_options(game_options)
         self.write("--- Game on! ---")
 
     def display_input_help(self, input_method: InputMethod) -> None:
@@ -64,7 +64,7 @@ class CLI:
         self,
         statistics: list[Stats],
         last_turns: list[Turn],
-        game_opt: GameOptions,
+        game_options: GameOptions,
         clear_screen: bool = True,
     ) -> None:
         if clear_screen:
@@ -115,20 +115,20 @@ class CLI:
         for player in player_lines:
             self.write(player)
         self.write((2 * dashes + len(title)) * "-")
-        self.display_input_help(game_opt.input_method)
+        self.display_input_help(game_options.input_method)
         for turn in reversed(last_turns):
             previous_turn = (
                 f"{turn.player} requires: {turn.score}"
                 f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score}"
             )
-            if is_overthrow(turn.score, turn.throw, game_opt.check_out):
+            if is_overthrow(turn.score, turn.throw, game_options.check_out):
                 previous_turn += "  - Overthrow"
             self.write(previous_turn)
 
-    def display_game_options(self, game_opt: GameOptions) -> None:
+    def display_game_options(self, game_options: GameOptions) -> None:
         dashes = 15
         self.write(dashes * "#" + " Game settings " + dashes * "#")
-        for key, value in game_opt.__dict__.items():
+        for key, value in game_options.__dict__.items():
             self.write(f"{key}: {value}")
         self.write((2 * dashes + 15) * "#")
         self.read("If options read press enter")
@@ -174,7 +174,7 @@ class CLI:
                 break
             self.write("Selected player not valid")
 
-        game_opt = load_game_opt_from_file()
-        game_opt.start_player = start_player
-        game_opt.save_to_file()
-        return game_opt
+        game_options = load_game_opt_from_file()
+        game_options.start_player = start_player
+        game_options.save_to_file()
+        return game_options
