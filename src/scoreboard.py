@@ -22,22 +22,28 @@ class Turn:
     throw_in_round: int = 0
 
 
-def subtract(score: int, throw: Throw, check_out: CheckInOut) -> tuple[int, bool]:
+def is_overthrow(score: int, throw: Throw, check_out: CheckInOut) -> bool:
     # subtracting with respect to the chosen game GameOptions
     prefix, _ = throw.get_and_strip_prefix()
     remaining = score - throw.calc_score()
     if remaining < 0:
-        return score, True
+        return True
     if check_out == CheckInOut.DOUBLE:
         if remaining == 0:
             if prefix != "d":
-                return score, True
+                return True
         elif remaining == 1:
-            return score, True
+            return True
     elif check_out != CheckInOut.STRAIGHT:
         raise NotImplementedError("Checkoutmethod not implemented")
-    return remaining, False
-    
+    return False
+
+
+def subtract(score: int, throw: Throw, check_out: CheckInOut) -> int:
+    if is_overthrow(score, throw, check_out):
+        return score
+    return score - throw.calc_score()
+
 
 class Scoreboard:
     def __init__(self, game_opt: GameOptions):
@@ -92,13 +98,13 @@ class Scoreboard:
         return self.history
 
     def get_turns_of_leg(
-        self, dset: int = -1, leg: int = -1, nr_throws: int = -1
+        self, dset: int = -1, leg: int = -1, turns_to_return: int = -1
     ) -> list[Turn]:
         last_turns: list[Turn] = []
-        if nr_throws < 0:
-            nr_throws = len(self.players) * 3 - 1
+        if turns_to_return < 0:
+            turns_to_return = len(self.players) * 3 - 1
         reversed_leg_history = iter(reversed(self.history[dset][leg]))
-        for _ in range(nr_throws):
+        for _ in range(turns_to_return):
             turn = next(reversed_leg_history, None)
             if not turn:
                 break
@@ -116,8 +122,7 @@ class Scoreboard:
         last_turn = self.get_last_turn_of_leg(player)
         if not last_turn:
             return self.game_opt.start_points
-        remaining, _ = subtract(last_turn.score, last_turn.throw, self.game_opt.check_out)
-        return remaining
+        return subtract(last_turn.score, last_turn.throw, self.game_opt.check_out)
 
     def get_won_sets_of(self, player: str) -> int:
         won_sets = 0
@@ -133,10 +138,10 @@ class Scoreboard:
         for leg in self.history[dset]:
             if not len(leg):
                 continue
-            remaining, _ = subtract(
+
+            if leg[-1].player == player and not subtract(
                 leg[-1].score, leg[-1].throw, self.game_opt.check_out
-            )
-            if leg[-1].player == player and not remaining:
+            ):
                 won_legs += 1
         return won_legs
 

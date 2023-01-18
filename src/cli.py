@@ -3,7 +3,7 @@ from typing import Optional
 from platform import system
 import colorama
 
-from src.scoreboard import Stats, Turn, subtract
+from src.scoreboard import Stats, Turn, is_overthrow
 from src.game_options import (
     GameOptions,
     InputMethod,
@@ -121,8 +121,7 @@ class CLI:
                 f"{turn.player} requires: {turn.score}"
                 f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score}"
             )
-            _, is_overthrow = subtract(turn.score, turn.throw, game_opt.check_out)
-            if is_overthrow:
+            if is_overthrow(turn.score, turn.throw, game_opt.check_out):
                 previous_turn += "  - Overthrow"
             self.write(previous_turn)
 
