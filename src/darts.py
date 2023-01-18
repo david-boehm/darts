@@ -59,6 +59,11 @@ class XOhOne:
                     return self.scoreboard.is_win("game", players[player])
 
             if undo_player:
+                players = set_start_player(
+                    self.players,
+                    self.game_options.start_player,
+                    *self.scoreboard.get_won_sets_and_legs(),
+                )
                 throw_in_round = self.game_options.input_method.value - 1
                 if player > 0:
                     player -= 1
