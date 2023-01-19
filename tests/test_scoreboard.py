@@ -1,60 +1,103 @@
 import pytest
 
-from src.scoreboard import Scoreboard, set_start_player, is_overthrow
-from src.game_options import GameOptions, CheckInOut
+from src.scoreboard import Scoreboard, is_overthrow
+from src.game_options import GameOptions, CheckInOut, InputMethod
 from src.general.throw import Throw
 
 
-def rotate(players: list[str], rotations: int) -> list[str]:
-    _players = players.copy()
-    for i in range(rotations):
-        _players.append(_players.pop(0))
-    return _players
+current_player_data: list[tuple[int, int, int]] = [
+    (0, 0, 0),
+    (0, 1, 0),
+    (0, 2, 0),
+    (0, 3, 1),
+    (0, 4, 1),
+    (0, 5, 1),
+    (0, 6, 2),
+    (0, 7, 2),
+    (0, 8, 2),
+    (0, 9, 0),
 
-
-def add_win(
-    dict_to_add: dict[str, int], key_to_add: str, value_to_set: int
-) -> dict[str, int]:
-    _dict_to_add = dict_to_add.copy()
-    _dict_to_add[key_to_add] = value_to_set
-    return _dict_to_add
-
-
-players = ["a", "b", "c"]
-sets = {"a": 0, "b": 0, "c": 0}
-legs = {"a": 0, "b": 0, "c": 0}
-
-
-test_data = [
-    (players, 0, sets, legs, rotate(players, 0)),
-    (players, 1, sets, legs, rotate(players, 1)),
-    (players, 2, sets, legs, rotate(players, 2)),
-    (players, 0, sets, add_win(legs, "a", 1), rotate(players, 1)),
-    (players, 0, sets, add_win(legs, "b", 2), rotate(players, 2)),
-    (players, 0, sets, add_win(legs, "c", 3), rotate(players, 3)),
-    (players, 1, sets, add_win(legs, "a", 1), rotate(players, 2)),
-    (players, 1, sets, add_win(legs, "b", 2), rotate(players, 3)),
-    (players, 1, sets, add_win(legs, "c", 3), rotate(players, 4)),
-    (players, 0, add_win(sets, "a", 1), legs, rotate(players, 1)),
-    (players, 0, add_win(sets, "a", 1), add_win(legs, "a", 1), rotate(players, 2)),
-    (players, 0, add_win(sets, "a", 1), add_win(legs, "b", 2), rotate(players, 3)),
-    (players, 0, add_win(sets, "a", 1), add_win(legs, "c", 3), rotate(players, 4)),
-    (players, 1, add_win(sets, "a", 1), legs, rotate(players, 2)),
-    (players, 1, add_win(sets, "a", 1), add_win(legs, "a", 1), rotate(players, 3)),
-    (players, 1, add_win(sets, "a", 1), add_win(legs, "b", 2), rotate(players, 4)),
-    (players, 1, add_win(sets, "a", 1), add_win(legs, "c", 3), rotate(players, 5)),
+    (1, 0, 1),
+    (1, 1, 1),
+    (1, 2, 1),
+    (1, 3, 2),
+    (1, 4, 2),
+    (1, 5, 2),
+    (1, 6, 0),
+    (1, 7, 0),
+    (1, 8, 0),
+    (1, 9, 1),
 ]
 
 
-@pytest.mark.parametrize("players,start_player,sets,legs,rotated_players", test_data)
-def test_set_start_player(
-    players: list[str],
+@pytest.mark.parametrize("start_player, darts,current_player", current_player_data)
+def test_get_current_player(
     start_player: int,
-    sets: dict[str, int],
-    legs: dict[str, int],
-    rotated_players: list[str],
+    darts: int,
+    current_player: int,
 ) -> None:
-    assert set_start_player(players, start_player, sets, legs) == rotated_players
+    game_options = GameOptions(start_player=start_player, sets=1, legs=1)
+    game_options.input_method = InputMethod.THREEDARTS
+    scoreboard = Scoreboard(game_options)
+    for player in ["a", "b", "c"]:
+        scoreboard.register_player(player)
+    for i in range(darts):
+        manuel_player = scoreboard.get_players()[((i // 3) + start_player) % 3]
+        scoreboard.add_throw(manuel_player, Throw("1"), i % 3)
+    print(scoreboard.get_history())
+    assert scoreboard.get_current_player() == scoreboard.get_players()[current_player]
+
+
+starting_data: list[tuple[int, int, int, int]] = [
+    (0, 0, 0, 0),
+    (0, 0, 1, 1),
+    (0, 0, 2, 2),
+    (0, 1, 0, 1),
+    (0, 1, 1, 2),
+    (0, 1, 2, 0),
+    (1, 0, 0, 1),
+    (1, 0, 1, 2),
+    (1, 0, 2, 0),
+    (1, 1, 0, 2),
+    (1, 1, 1, 0),
+    (1, 1, 2, 1),
+    (2, 0, 0, 2),
+    (2, 0, 1, 0),
+    (2, 0, 2, 1),
+    (2, 1, 0, 0),
+    (2, 1, 1, 1),
+    (2, 1, 2, 2),
+]
+
+
+@pytest.mark.parametrize(
+    "set_start_player,won_sets,won_legs,start_player", starting_data
+)
+def test_get_start_player_of_leg(
+    set_start_player: int,
+    won_sets: int,
+    won_legs: int,
+    start_player: int,
+) -> None:
+    to_win = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "d12"]
+    game_options = GameOptions()
+    game_options.start_player = set_start_player
+    game_options.sets = 2
+    game_options.legs = 3
+    game_options.input_method = InputMethod.THREEDARTS
+    scoreboard = Scoreboard(game_options)
+    for player in ["a", "b", "c"]:
+        any_player = scoreboard.register_player(player)
+    for won_set in range(won_sets):
+        for won_leg in range(game_options.legs):
+            for dart, throw in enumerate(to_win):
+                scoreboard.add_throw(any_player, Throw(throw), dart % 3)
+            scoreboard.append_hist_if_winning_throw(any_player)
+    for won_leg in range(won_legs):
+        for dart, throw in enumerate(to_win):
+            scoreboard.add_throw(any_player, Throw(throw), dart % 3)
+        scoreboard.append_hist_if_winning_throw(any_player)
+    assert scoreboard.get_start_player_of_leg() == scoreboard.get_players()[start_player]
 
 
 straight_out = GameOptions()
@@ -100,10 +143,10 @@ def test_subtract(
     to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
     to_twenty_four.extend([second_to_last_throw, last_throw])
     scoreboard = Scoreboard(game_options)
-    scoreboard.register_player("player")
+    player = scoreboard.register_player("player")
     for dart in to_twenty_four:
-        scoreboard.add_throw("player", Throw(dart), 0)
-    assert scoreboard.get_remaining_score_of("player") == remaining_score
+        scoreboard.add_throw(player, Throw(dart), 0)
+    assert scoreboard.get_remaining_score_of(player) == remaining_score
 
 
 @pytest.mark.parametrize(
@@ -120,10 +163,10 @@ def test_is_overthrow(
     to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
     to_twenty_four.extend([second_to_last_throw])
     scoreboard = Scoreboard(game_options)
-    scoreboard.register_player("player")
+    player = scoreboard.register_player("player")
     for dart in to_twenty_four:
-        scoreboard.add_throw("player", Throw(dart), 0)
-    remaining_score = scoreboard.get_remaining_score_of("player")
+        scoreboard.add_throw(player, Throw(dart), 0)
+    remaining_score = scoreboard.get_remaining_score_of(player)
     assert (
         is_overthrow(remaining_score, Throw(last_throw), game_options.check_out)
         == result

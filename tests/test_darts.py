@@ -70,12 +70,12 @@ twenty_four_score: list[tuple[GameOptions, str, str, bool]] = [
 def test_darts(
     game_opt: GameOptions, second_to_last_throw: str, last_throw: str, result: bool
 ) -> None:
-    players = ["test_player"]
+
     to_twenty_four = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19"]
     to_twenty_four.append(second_to_last_throw)
-    game = XOhOne(TestingUI(last_throw), players, game_opt)
-    for player in players:
-        game.scoreboard.register_player(player)
+    game = XOhOne(TestingUI(last_throw), ["test_player"], game_opt)
+    for player in ["test_player"]:
+        reg_player = game.scoreboard.register_player(player)
         for dart in to_twenty_four:
-            game.scoreboard.add_throw(player, Throw(dart), 0)
+            game.scoreboard.add_throw(reg_player, Throw(dart), 0)
     assert game.do_player_round() == result

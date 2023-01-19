@@ -118,7 +118,7 @@ class CLI:
         self.display_input_help(game_options.input_method)
         for turn in reversed(last_turns):
             previous_turn = (
-                f"{turn.player} requires: {turn.score}"
+                f"{turn.player.name} requires: {turn.score}"
                 f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score}"
             )
             if is_overthrow(turn.score, turn.throw, game_options.check_out):
