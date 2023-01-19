@@ -3,7 +3,7 @@ import pytest
 from src.darts import XOhOne
 from src.scoreboard import Stats, Turn
 from src.game_options import GameOptions, ThrowReturn, CheckInOut
-from src.general.throw import Throw
+from src.throw import Throw
 
 
 class TestingUI:

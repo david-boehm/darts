@@ -3,7 +3,7 @@ from typing import Protocol
 
 from src.scoreboard import Stats, Turn
 from src.game_options import GameOptions, ThrowReturn
-from src.general.throw import Throw
+from src.throw import Throw
 
 
 class UI(Protocol):

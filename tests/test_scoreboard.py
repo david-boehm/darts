@@ -2,7 +2,7 @@ import pytest
 
 from src.scoreboard import Scoreboard, is_overthrow
 from src.game_options import GameOptions, CheckInOut, InputMethod
-from src.general.throw import Throw
+from src.throw import Throw
 
 
 current_player_data: list[tuple[int, int, int]] = [

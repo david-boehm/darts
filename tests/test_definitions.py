@@ -1,6 +1,6 @@
 import pytest
 from src.game_options import InputMethod
-from src.general.throw import Throw
+from src.throw import Throw
 
 valid_test_data = [
     ("t20", InputMethod.THREEDARTS, 60),

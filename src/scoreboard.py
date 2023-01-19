@@ -1,7 +1,7 @@
 from typing import Optional
 from dataclasses import dataclass
 from src.game_options import GameOptions, CheckInOut
-from src.general.throw import Throw
+from src.throw import Throw
 
 
 @dataclass
@@ -89,7 +89,10 @@ class Scoreboard:
         start_player = self.get_start_player_of_leg()
         if not last_turn:
             return start_player
-        if last_turn.throw_in_round < self.game_options.input_method.value - 1:
+        if (
+            last_turn.throw_in_round < self.game_options.input_method.value - 1
+            and not self.was_overthrow(last_turn.player)
+        ):
             return last_turn.player
         last_player = self.players.index(last_turn.player)
         return self.players[(last_player + 1) % len(self.players)]
@@ -195,8 +198,11 @@ class Scoreboard:
                 for turn in leg:
                     if not turn.player == player:
                         continue
-                    thrown_total += turn.throw.calc_score()
-                    darts += 1
+                    if not is_overthrow(turn.score, turn.throw, self.game_options.check_out):
+                        thrown_total += turn.throw.calc_score()
+                        darts += 1
+                    else:
+                        darts += self.game_options.input_method.value - turn.throw_in_round
         if not darts:
             return 0, darts
         return thrown_total / darts * 3, darts

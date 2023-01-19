@@ -10,7 +10,7 @@ from src.game_options import (
     ThrowReturn,
     load_game_opt_from_file,
 )
-from src.general.throw import Throw
+from src.throw import Throw
 
 ABORT_MSG = ["exit", "abort", "quit", "stop", "end"]
 UNDO = ["undo", "back"]
