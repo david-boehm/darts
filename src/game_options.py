@@ -68,8 +68,7 @@ class GameOptions:
             file.write(self.to_json())
 
 
-def load_game_opt_from_file(
-        file_name: str = GAME_OPTIONS_SAVE_FILE) -> GameOptions:
+def load_game_opt_from_file(file_name: str = GAME_OPTIONS_SAVE_FILE) -> GameOptions:
     if not os.path.exists(file_name):
         return GameOptions()
     with open(file_name, "r") as file:

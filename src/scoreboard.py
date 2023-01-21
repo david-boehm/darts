@@ -72,7 +72,7 @@ class Scoreboard:
             )
         )
 
-    def get_start_player_of_leg(
+    def start_player_of_leg(
         self,
     ) -> Player:
         number_of_player_shifts = self.game_options.start_player
@@ -81,21 +81,21 @@ class Scoreboard:
             number_of_player_shifts += self.get_won_legs_of(player)
         return self.players[number_of_player_shifts % len(self.players)]
 
-    def get_current_player(self) -> Player:
+    def current_player(self) -> tuple[Player, int]:
         last_turn = next(
             reversed(self.history[-1][-1]),
             None,
         )
-        start_player = self.get_start_player_of_leg()
+        start_player = self.start_player_of_leg()
         if not last_turn:
-            return start_player
+            return start_player, 0
         if (
             last_turn.throw_in_round < self.game_options.input_method.value - 1
             and not self.was_overthrow(last_turn.player)
         ):
-            return last_turn.player
+            return last_turn.player, last_turn.throw_in_round + 1
         last_player = self.players.index(last_turn.player)
-        return self.players[(last_player + 1) % len(self.players)]
+        return self.players[(last_player + 1) % len(self.players)], 0
 
     def was_overthrow(self, player: Player) -> bool:
         last_turn = self.get_last_turn_of_leg(player)
@@ -142,19 +142,42 @@ class Scoreboard:
     def get_players(self) -> list[Player]:
         return self.players
 
-    def get_turns_of_leg(
-        self, dset: int = -1, leg: int = -1, turns_to_return: int = -1
-    ) -> list[Turn]:
-        last_turns: list[Turn] = []
-        if turns_to_return < 0:
-            turns_to_return = len(self.players) * 3 - 1
-        reversed_leg_history = iter(reversed(self.history[dset][leg]))
-        for _ in range(turns_to_return):
+    def turns_of_current_round(self) -> list[Turn]:
+        turns: list[Turn] = []
+        player, throw_in_round = self.current_player()
+        current_player_nr = self.start_player_of_leg().idf + player.idf % len(
+            self.players
+        )
+        reversed_leg_history = iter(reversed(self.history[-1][-1]))
+        found_players = 0
+        if len(self.players) == 1:
+            while True:
+                turn = next(reversed_leg_history, None)
+                if not turn:
+                    break
+                if (
+                    self.game_options.input_method.value - 1 == turn.throw_in_round
+                    or is_overthrow(turn.score, turn.throw, self.game_options.check_out)
+                ):
+                    break
+                turns.append(turn)
+            return turns
+
+        while found_players <= current_player_nr:
             turn = next(reversed_leg_history, None)
             if not turn:
                 break
-            last_turns.append(turn)
-        return last_turns
+            if not len(turns):
+                if turn.player != player:
+                    found_players += 1
+            elif turn.player != turns[-1].player:
+                found_players += 1
+            turns.append(turn)
+        else:  # on non break
+            if len(turns):
+                turns.pop()
+            return turns
+        return turns
 
     def get_last_turn_of_leg(self, player: Player) -> Optional[Turn]:
         last_turn = next(
@@ -198,11 +221,15 @@ class Scoreboard:
                 for turn in leg:
                     if not turn.player == player:
                         continue
-                    if not is_overthrow(turn.score, turn.throw, self.game_options.check_out):
+                    if not is_overthrow(
+                        turn.score, turn.throw, self.game_options.check_out
+                    ):
                         thrown_total += turn.throw.calc_score()
                         darts += 1
                     else:
-                        darts += self.game_options.input_method.value - turn.throw_in_round
+                        darts += (
+                            self.game_options.input_method.value - turn.throw_in_round
+                        )
         if not darts:
             return 0, darts
         return thrown_total / darts * 3, darts

@@ -20,32 +20,25 @@ class XOhOne:
             ...  # Do some stuff if more than two are playing
 
     def do_player_round(self) -> bool:
-        throw_in_round = 0
-        player = self.scoreboard.get_current_player()
-        while throw_in_round < self.game_options.input_method.value:
-            self.ui.display_scoreboard(
-                self.scoreboard.get_all_stats(),
-                # to fix
-                self.scoreboard.get_turns_of_leg(),  # [0 : 3 * player + throw_in_round],
-                self.game_options,
-            )
-            throw_return, throw = self.ui.read_throw(
-                player.name,
-                self.scoreboard.get_remaining_score_of(player),
-                throw_in_round,
-            )
-            if throw_return == ThrowReturn.EXIT:
-                sys.exit("The game was canceled")
-            elif throw_return == ThrowReturn.UNDO:
-                if self.scoreboard.undo_throw():
-                    if throw_in_round == 0:
-                        break
-                    throw_in_round -= 1
-                continue
-            self.scoreboard.add_throw(player, throw, throw_in_round)
-            throw_in_round += 1
-            if self.scoreboard.was_overthrow(player):
-                break
-            if self.scoreboard.append_hist_if_winning_throw(player):
-                return self.scoreboard.is_win("game", player)
+        player, throw_in_round = self.scoreboard.current_player()
+        self.ui.display_scoreboard(
+            self.scoreboard.get_all_stats(),
+            self.scoreboard.turns_of_current_round(),
+            self.game_options,
+        )
+        throw_return, throw = self.ui.read_throw(
+            player.name,
+            self.scoreboard.get_remaining_score_of(player),
+            throw_in_round,
+        )
+        if throw_return == ThrowReturn.EXIT:
+            sys.exit("The game was canceled")
+        elif throw_return == ThrowReturn.UNDO:
+            if self.scoreboard.undo_throw():
+                return False
+        self.scoreboard.add_throw(player, throw, throw_in_round)
+        if self.scoreboard.was_overthrow(player):
+            return False
+        if self.scoreboard.append_hist_if_winning_throw(player):
+            return self.scoreboard.is_win("game", player)
         return False
