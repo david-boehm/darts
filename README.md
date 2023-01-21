@@ -13,7 +13,7 @@ Currently, the game options can only be changed in the game_options.json file af
 ## How to setup
 
 - Uses python_version > 3.10
-- Install required packages in requirements.txt (virtuel environment recomended)
+- Install required packages in requirements.txt
 ```shell
 pip install -r requirements.txt
 ```

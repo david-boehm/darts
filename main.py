@@ -1,4 +1,3 @@
-#!/home/david/.local/share/virtualenvs/darts-Nw6fRG6O/bin/python
 # #!/usr/bin/python
 import sys
 
