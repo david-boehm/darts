@@ -4,15 +4,21 @@ from src.game_options import InputMethod, IMPOSSIBLE_SCORES, SEGMENTS
 class Throw:
     # Eventually meeds a dart variable to safe the thrown dart 1, 2 or 3
     def __init__(
-        self, input_score: str, input_methode: InputMethod = InputMethod.THREEDARTS
+        self, input_score: str, input_method: InputMethod = InputMethod.THREEDARTS
     ) -> None:
         self.input_score = input_score.strip().lower()
-        self.input_methode = input_methode
+        self.input_method = input_method
         self.is_valid_input()
 
     def __repr__(self) -> str:
         list_of_items = [f"{key}: {value}" for key, value in self.__dict__.items()]
         return " ".join(list_of_items)
+
+    # used for testing ==
+    def __eq__(self, other) -> bool:
+        if self.__class__ != other.__class__:
+            return False
+        return self.__dict__ == other.__dict__
 
     def is_valid_input(self) -> None:
         prefix = ""
@@ -22,9 +28,9 @@ class Throw:
                 f"Number of input darts: {len(self.input_score.split())} not equal to 1"
             )
         if not self.input_score.isdecimal():
-            if self.input_methode == InputMethod.ROUND:
+            if self.input_method == InputMethod.ROUND:
                 raise ValueError(f"Input {self.input_score} is not decimal")
-            elif self.input_methode == InputMethod.THREEDARTS:
+            elif self.input_method == InputMethod.THREEDARTS:
                 if not self.input_score.startswith(
                     "d"
                 ) and not self.input_score.startswith("t"):
@@ -32,10 +38,10 @@ class Throw:
             prefix, stripped_input_score = self.get_and_strip_prefix()
         if stripped_input_score.isdecimal():
             int_score = int(stripped_input_score)
-            if self.input_methode == InputMethod.ROUND:
+            if self.input_method == InputMethod.ROUND:
                 if int_score in IMPOSSIBLE_SCORES or int_score > 180:
                     raise ValueError(f"Input {self.input_score} is impossible to score")
-            elif self.input_methode == InputMethod.THREEDARTS:
+            elif self.input_method == InputMethod.THREEDARTS:
                 if int_score not in SEGMENTS:
                     raise ValueError(f"Input {self.input_score} is not a segment")
                 if prefix == "t" and int_score == 25:

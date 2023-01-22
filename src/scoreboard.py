@@ -81,7 +81,7 @@ class Scoreboard:
             number_of_player_shifts += self.get_won_legs_of(player)
         return self.players[number_of_player_shifts % len(self.players)]
 
-    def current_player(self) -> tuple[Player, int]:
+    def current_player_and_throw(self) -> tuple[Player, int]:
         last_turn = next(
             reversed(self.history[-1][-1]),
             None,
@@ -105,6 +105,14 @@ class Scoreboard:
             last_turn.score, last_turn.throw, self.game_options.check_out
         )
 
+    def append_hist_if_winning_throw(self, player: Player) -> bool:
+        if self.is_win("leg", player):
+            if self.is_win("set", player):
+                self.history.append([])
+            self.history[-1].append([])
+            return True
+        return False
+
     def is_win(self, asked: str, player: Player) -> bool:
         if asked == "leg":
             return self.get_remaining_score_of(player) == 0
@@ -113,14 +121,6 @@ class Scoreboard:
         elif asked == "game":
             return self.get_won_sets_of(player) >= self.game_options.sets
         raise ValueError(f"Cannot determine if is_win() with input '{asked}'")
-
-    def append_hist_if_winning_throw(self, player: Player) -> bool:
-        if self.is_win("leg", player):
-            if self.is_win("set", player):
-                self.history.append([])
-            self.history[-1].append([])
-            return True
-        return False
 
     def undo_throw(self) -> bool:
         if (
@@ -142,9 +142,22 @@ class Scoreboard:
     def get_players(self) -> list[Player]:
         return self.players
 
-    def turns_of_current_round(self) -> list[Turn]:
+    def get_last_turn_of_leg(self, player: Player) -> Optional[Turn]:
+        last_turn = next(
+            (turn for turn in reversed(self.history[-1][-1]) if turn.player == player),
+            None,
+        )
+        return last_turn
+
+    def get_remaining_score_of(self, player: Player) -> int:
+        last_turn = self.get_last_turn_of_leg(player)
+        if not last_turn:
+            return self.game_options.start_points
+        return subtract(last_turn.score, last_turn.throw, self.game_options.check_out)
+
+    def get_turns_of_current_round(self) -> list[Turn]:
         turns: list[Turn] = []
-        player, throw_in_round = self.current_player()
+        player, throw_in_round = self.current_player_and_throw()
         current_player_nr = self.start_player_of_leg().idf + player.idf % len(
             self.players
         )
@@ -179,19 +192,7 @@ class Scoreboard:
             return turns
         return turns
 
-    def get_last_turn_of_leg(self, player: Player) -> Optional[Turn]:
-        last_turn = next(
-            (turn for turn in reversed(self.history[-1][-1]) if turn.player == player),
-            None,
-        )
-        return last_turn
-
-    def get_remaining_score_of(self, player: Player) -> int:
-        last_turn = self.get_last_turn_of_leg(player)
-        if not last_turn:
-            return self.game_options.start_points
-        return subtract(last_turn.score, last_turn.throw, self.game_options.check_out)
-
+    # probably separate to statistics class
     def get_won_sets_of(self, player: Player) -> int:
         won_sets = 0
         for i, dset in enumerate(self.history):

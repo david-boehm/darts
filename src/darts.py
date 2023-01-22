@@ -20,10 +20,10 @@ class XOhOne:
             ...  # Do some stuff if more than two are playing
 
     def do_player_round(self) -> bool:
-        player, throw_in_round = self.scoreboard.current_player()
+        player, throw_in_round = self.scoreboard.current_player_and_throw()
         self.ui.display_scoreboard(
             self.scoreboard.get_all_stats(),
-            self.scoreboard.turns_of_current_round(),
+            self.scoreboard.get_turns_of_current_round(),
             self.game_options,
         )
         throw_return, throw = self.ui.read_throw(
