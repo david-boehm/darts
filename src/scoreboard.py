@@ -92,10 +92,18 @@ class Scoreboard:
         if (
             last_turn.throw_in_round < self.game_options.input_method.value - 1
             and not self.was_overthrow(last_turn.player)
+            and self.get_remaining_score_of(last_turn.player)
         ):
             return last_turn.player, last_turn.throw_in_round + 1
-        last_player = self.players.index(last_turn.player)
-        return self.players[(last_player + 1) % len(self.players)], 0
+        count = 1
+        while True:
+            next_id = (self.players.index(last_turn.player) + count) % len(self.players)
+            if self.get_remaining_score_of(self.players[next_id]):
+                break
+            if count >= len(self.players):
+                raise ValueError("No player with score different from zero found")
+            count += 1
+        return self.players[next_id], 0
 
     def was_overthrow(self, player: Player) -> bool:
         last_turn = self.get_last_turn_of_leg(player)
@@ -105,13 +113,21 @@ class Scoreboard:
             last_turn.score, last_turn.throw, self.game_options.check_out
         )
 
-    def append_hist_if_winning_throw(self, player: Player) -> bool:
+    def append_hist_if_leg_won(self, player: Player) -> bool:
         if self.is_win("leg", player):
             if self.is_win("set", player):
                 self.history.append([])
             self.history[-1].append([])
             return True
         return False
+
+    def find_winner_of_leg(self, dset: int = -1, leg: int = -1) -> Player:
+        if len(self.players) == 1:
+            return self.players[0]
+        for turn in self.history[dset][leg]:
+            if not subtract(turn.score, turn.throw, self.game_options.check_out):
+                return turn.player
+        raise ValueError("Called on an unfinished leg")
 
     def is_win(self, asked: str, player: Player) -> bool:
         if asked == "leg":
@@ -121,6 +137,13 @@ class Scoreboard:
         elif asked == "game":
             return self.get_won_sets_of(player) >= self.game_options.sets
         raise ValueError(f"Cannot determine if is_win() with input '{asked}'")
+
+    def number_of_remaining_players(self) -> int:
+        count = 0
+        for player in self.players:
+            if self.get_remaining_score_of(player):
+                count += 1
+        return count
 
     def undo_throw(self) -> bool:
         if (
@@ -207,11 +230,11 @@ class Scoreboard:
         for leg in self.history[dset]:
             if not len(leg):
                 continue
-
-            if leg[-1].player == player and not subtract(
-                leg[-1].score, leg[-1].throw, self.game_options.check_out
-            ):
-                won_legs += 1
+            for turn in leg:
+                if not subtract(turn.score, turn.throw, self.game_options.check_out):
+                    if turn.player == player:
+                        won_legs += 1
+                    break
         return won_legs
 
     def average_darts_of(self, player: Player) -> tuple[float, int]:

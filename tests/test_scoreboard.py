@@ -69,11 +69,11 @@ def test_get_start_player_of_leg(
         for won_leg in range(game_options.legs):
             for dart, throw in enumerate(to_win):
                 scoreboard.add_throw(any_player, Throw(throw), dart % 3)
-            scoreboard.append_hist_if_winning_throw(any_player)
+            scoreboard.append_hist_if_leg_won(any_player)
     for won_leg in range(won_legs):
         for dart, throw in enumerate(to_win):
             scoreboard.add_throw(any_player, Throw(throw), dart % 3)
-        scoreboard.append_hist_if_winning_throw(any_player)
+        scoreboard.append_hist_if_leg_won(any_player)
     assert scoreboard.start_player_of_leg() == scoreboard.get_players()[start_player]
 
 
@@ -280,8 +280,8 @@ def test_is_win(
         scoreboard.add_throw(player, Throw("d5"), throw_in_round)
         if (i + 1) % 2 == 0:
             # condition for leg and set needs to be checked before
-            # appending to history
-            if asked != "game" and throws_to_input % 2 == 0:
+            # appending to history, continue on last
+            if asked != "game" and throws_to_input - 1 == i:
                 continue
             scoreboard.history.append([])
             scoreboard.history[-1].append([])

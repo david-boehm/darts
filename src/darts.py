@@ -37,8 +37,13 @@ class XOhOne:
             if self.scoreboard.undo_throw():
                 return False
         self.scoreboard.add_throw(player, throw, throw_in_round)
-        if self.scoreboard.was_overthrow(player):
+        if (
+            self.scoreboard.was_overthrow(player)
+            or self.scoreboard.number_of_remaining_players() > 1
+        ):
             return False
-        if self.scoreboard.append_hist_if_winning_throw(player):
-            return self.scoreboard.is_win("game", player)
+        # kinda weird, finds winner even if not won
+        winner = self.scoreboard.find_winner_of_leg()
+        if self.scoreboard.append_hist_if_leg_won(winner):
+            return self.scoreboard.is_win("game", winner)
         return False
