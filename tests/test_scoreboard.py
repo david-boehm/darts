@@ -55,57 +55,61 @@ def test_get_start_player_of_leg(
     won_legs: int,
     start_player: int,
 ) -> None:
-    to_win = ["t20", "t20", "t20", "t20", "t20", "t20", "t20", "t19", "d12"]
     game_options = GameOptions(
         start_player=set_start_player,
         sets=2,
         legs=3,
+        start_points=10,
         input_method=InputMethod.THREEDARTS,
     )
     scoreboard = Scoreboard(game_options)
     for player in ["a", "b", "c"]:
-        any_player = scoreboard.register_player(player)
+        scoreboard.register_player(player)
     for won_set in range(won_sets):
         for won_leg in range(game_options.legs):
-            for dart, throw in enumerate(to_win):
-                scoreboard.add_throw(any_player, Throw(throw), dart % 3)
-            scoreboard.append_hist_if_leg_won(any_player)
+            # two players must finish to end a leg
+            for i in range(2):
+                scoreboard.add_throw(scoreboard.get_players()[i], Throw("d5"), 0)
+            scoreboard.append_hist_if_leg_finished()
     for won_leg in range(won_legs):
-        for dart, throw in enumerate(to_win):
-            scoreboard.add_throw(any_player, Throw(throw), dart % 3)
-        scoreboard.append_hist_if_leg_won(any_player)
+        for i in range(2):
+            scoreboard.add_throw(scoreboard.get_players()[i], Throw("d5"), 0)
+        scoreboard.append_hist_if_leg_finished()
     assert scoreboard.start_player_of_leg() == scoreboard.get_players()[start_player]
 
 
-current_player_data: list[tuple[int, int, int]] = [
-    (0, 0, 0),
-    (0, 1, 0),
-    (0, 2, 0),
-    (0, 3, 1),
-    (0, 4, 1),
-    (0, 5, 1),
-    (0, 6, 2),
-    (0, 7, 2),
-    (0, 8, 2),
-    (0, 9, 0),
-    (1, 0, 1),
-    (1, 1, 1),
-    (1, 2, 1),
-    (1, 3, 2),
-    (1, 4, 2),
-    (1, 5, 2),
-    (1, 6, 0),
-    (1, 7, 0),
-    (1, 8, 0),
-    (1, 9, 1),
+current_player_data: list[tuple[int, int, int, int]] = [
+    (0, 0, 0, 0),
+    (0, 1, 0, 1),
+    (0, 2, 0, 2),
+    (0, 3, 1, 0),
+    (0, 4, 1, 1),
+    (0, 5, 1, 2),
+    (0, 6, 2, 0),
+    (0, 7, 2, 1),
+    (0, 8, 2, 2),
+    (0, 9, 0, 0),
+    (1, 0, 1, 0),
+    (1, 1, 1, 1),
+    (1, 2, 1, 2),
+    (1, 3, 2, 0),
+    (1, 4, 2, 1),
+    (1, 5, 2, 2),
+    (1, 6, 0, 0),
+    (1, 7, 0, 1),
+    (1, 8, 0, 2),
+    (1, 9, 1, 0),
 ]
 
 
-@pytest.mark.parametrize("start_player, darts, current_player", current_player_data)
-def test_get_current_player(
+@pytest.mark.parametrize(
+    "start_player, darts, current_player, current_dart", current_player_data
+)
+def test_current_player_and_throw(
     start_player: int,
     darts: int,
     current_player: int,
+    current_dart: int,
 ) -> None:
     game_options = GameOptions(
         start_player=start_player, sets=1, legs=1, input_method=InputMethod.THREEDARTS
@@ -116,6 +120,93 @@ def test_get_current_player(
     for i in range(darts):
         manuel_player = scoreboard.get_players()[((i // 3) + start_player) % 3]
         scoreboard.add_throw(manuel_player, Throw("1"), i % 3)
+    print(scoreboard.get_history())
+    assert scoreboard.current_player_and_throw() == (
+        scoreboard.get_players()[current_player],
+        current_dart,
+    )
+
+
+current_player_if_data: list[tuple[int, list[tuple[int, str, int]], int]] = [
+    (  # zero test
+        0,
+        [],
+        0,
+    ),
+    (  # normal score test
+        0,
+        [
+            (0, "5", 0),
+        ],
+        0,
+    ),
+    (  # normal score test
+        0,
+        [
+            (0, "1", 0),
+            (0, "1", 1),
+            (0, "1", 2),
+        ],
+        1,
+    ),
+    (  # win test
+        0,
+        [
+            (0, "d5", 0),
+        ],
+        1,
+    ),
+    (  # double win test
+        0,
+        [
+            (0, "d5", 0),
+            (1, "d5", 0),
+        ],
+        2,
+    ),
+    (  # overthrow test
+        0,
+        [
+            (0, "10", 0),
+        ],
+        1,
+    ),
+    (  # overthrow, win test
+        0,
+        [
+            (0, "10", 0),
+            (1, "d5", 0),
+        ],
+        2,
+    ),
+    (  # win, overthrow test
+        0,
+        [
+            (0, "d5", 0),
+            (1, "10", 0),
+        ],
+        2,
+    ),
+]
+
+
+@pytest.mark.parametrize("start_player, throws, current_player", current_player_if_data)
+def test_current_player_if_finished(
+    start_player: int, throws: list[tuple[int, str, int]], current_player: int
+) -> None:
+    game_options = GameOptions(
+        start_player=start_player,
+        sets=1,
+        legs=1,
+        start_points=10,
+        input_method=InputMethod.THREEDARTS,
+    )
+    scoreboard = Scoreboard(game_options)
+    for player in ["a", "b", "c"]:
+        scoreboard.register_player(player)
+    players = scoreboard.get_players()
+    for player_id, throw, dart in throws:
+        scoreboard.add_throw(players[player_id], Throw(throw), dart)
     print(scoreboard.get_history())
     assert (
         scoreboard.current_player_and_throw()[0]
@@ -242,7 +333,7 @@ def test_is_overthrow_double_out(
 
 
 is_win_data: list[tuple[str, int, bool]] = [
-    ("leg", 0, False),  
+    ("leg", 0, False),
     ("leg", 1, False),
     ("leg", 2, True),
     ("set", 0, False),

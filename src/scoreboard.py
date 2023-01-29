@@ -113,13 +113,16 @@ class Scoreboard:
             last_turn.score, last_turn.throw, self.game_options.check_out
         )
 
-    def append_hist_if_leg_won(self, player: Player) -> bool:
-        if self.is_win("leg", player):
-            if self.is_win("set", player):
+    def append_hist_if_leg_finished(self) -> tuple[bool, Optional[Player]]:
+        if self.number_of_remaining_players() > 1 and len(self.players) > 1:
+            return False, None
+        winner = self.find_winner_of_leg()
+        if self.is_win("leg", winner):
+            if self.is_win("set", winner):
                 self.history.append([])
             self.history[-1].append([])
-            return True
-        return False
+            return True, winner
+        return False, None
 
     def find_winner_of_leg(self, dset: int = -1, leg: int = -1) -> Player:
         if len(self.players) == 1:
@@ -178,10 +181,14 @@ class Scoreboard:
             return self.game_options.start_points
         return subtract(last_turn.score, last_turn.throw, self.game_options.check_out)
 
+    # broken because all players have to end now
+    # reduce_number does no help, because start_player_of_leg already asumes next leg
+    # easier to implement rounds to turns and ask for them
+    # makes all of this irrelevant
     def get_turns_of_current_round(self) -> list[Turn]:
         turns: list[Turn] = []
         player, throw_in_round = self.current_player_and_throw()
-        current_player_nr = self.start_player_of_leg().idf + player.idf % len(
+        current_player_nr = (self.start_player_of_leg().idf + player.idf) % len(
             self.players
         )
         reversed_leg_history = iter(reversed(self.history[-1][-1]))
@@ -198,21 +205,19 @@ class Scoreboard:
                     break
                 turns.append(turn)
             return turns
-
-        while found_players <= current_player_nr:
+        # reduce_number = len(self.players) - self.number_of_remaining_players()
+        while found_players <= current_player_nr_ # - reduce_number:
             turn = next(reversed_leg_history, None)
             if not turn:
-                break
+                return turns
             if not len(turns):
                 if turn.player != player:
                     found_players += 1
             elif turn.player != turns[-1].player:
                 found_players += 1
             turns.append(turn)
-        else:  # on non break
-            if len(turns):
-                turns.pop()
-            return turns
+        if len(turns):
+            turns.pop()
         return turns
 
     # probably separate to statistics class
