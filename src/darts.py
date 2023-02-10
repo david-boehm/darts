@@ -21,9 +21,10 @@ class XOhOne:
 
     def do_player_round(self) -> bool:
         player, throw_in_round = self.scoreboard.current_player_and_throw()
+        round_of_leg = self.scoreboard.get_round(player)
         self.ui.display_scoreboard(
             self.scoreboard.get_all_stats(),
-            self.scoreboard.get_turns_of_current_round(),
+            self.scoreboard.get_turns_of_round(round_of_leg),
             self.game_options,
         )
         throw_return, throw = self.ui.read_throw(

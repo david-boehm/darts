@@ -23,6 +23,7 @@ class Stats:
 @dataclass
 class Turn:
     player: Player
+    round_of_leg: int
     score: int
     throw: Throw
     throw_in_round: int = 0
@@ -66,6 +67,7 @@ class Scoreboard:
         self.history[-1][-1].append(
             Turn(
                 player=player,
+                round_of_leg=self.get_round(player),
                 score=self.get_remaining_score_of(player),
                 throw=throw,
                 throw_in_round=throw_in_round,
@@ -181,43 +183,24 @@ class Scoreboard:
             return self.game_options.start_points
         return subtract(last_turn.score, last_turn.throw, self.game_options.check_out)
 
-    # broken because all players have to end now
-    # reduce_number does no help, because start_player_of_leg already asumes next leg
-    # easier to implement rounds to turns and ask for them
-    # makes all of this irrelevant
-    def get_turns_of_current_round(self) -> list[Turn]:
+    def get_round(self, player: Player) -> int:
+        last_turn = self.get_last_turn_of_leg(player)
+        if not last_turn:
+            return 0
+        if (
+            last_turn.throw_in_round >= self.game_options.input_method.value - 1
+            or self.was_overthrow(last_turn.player)
+        ):
+            return last_turn.round_of_leg + 1
+        return last_turn.round_of_leg
+
+    def get_turns_of_round(
+        self, round_of_leg: int, dset: int = -1, leg: int = -1
+    ) -> list[Turn]:
         turns: list[Turn] = []
-        player, throw_in_round = self.current_player_and_throw()
-        current_player_nr = (self.start_player_of_leg().idf + player.idf) % len(
-            self.players
-        )
-        reversed_leg_history = iter(reversed(self.history[-1][-1]))
-        found_players = 0
-        if len(self.players) == 1:
-            while True:
-                turn = next(reversed_leg_history, None)
-                if not turn:
-                    break
-                if (
-                    self.game_options.input_method.value - 1 == turn.throw_in_round
-                    or is_overthrow(turn.score, turn.throw, self.game_options.check_out)
-                ):
-                    break
+        for turn in self.history[dset][leg]:
+            if turn.round_of_leg == round_of_leg:
                 turns.append(turn)
-            return turns
-        # reduce_number = len(self.players) - self.number_of_remaining_players()
-        while found_players <= current_player_nr_ # - reduce_number:
-            turn = next(reversed_leg_history, None)
-            if not turn:
-                return turns
-            if not len(turns):
-                if turn.player != player:
-                    found_players += 1
-            elif turn.player != turns[-1].player:
-                found_players += 1
-            turns.append(turn)
-        if len(turns):
-            turns.pop()
         return turns
 
     # probably separate to statistics class

@@ -125,10 +125,7 @@ class CLI:
             self.write(player)
         self.write((2 * dashes + len(title)) * "-")
         self.display_input_help(game_options.input_method)
-        max_line_for_mode = (
-            MAX_LINES_TO_DISPLAY // (4 - game_options.input_method.value)
-        ) - 1
-        for turn in reversed(turns_of_round[:max_line_for_mode]):
+        for turn in turns_of_round[-(MAX_LINES_TO_DISPLAY - 1):]:
             to_print = (
                 f"{turn.player.name} requires: {turn.score:3}"
                 f" - Dart {turn.throw_in_round+1}: {turn.throw.input_score:<3}"

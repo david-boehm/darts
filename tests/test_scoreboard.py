@@ -19,9 +19,56 @@ def test_add_throw():
     scoreboard.add_throw(player, Throw("t20"), 0)
     assert (
         scoreboard.history[-1][-1][-1]
-        == Turn(player=player, score=501, throw=Throw("t20"), throw_in_round=0)
+        == Turn(
+            player=player,
+            score=501,
+            throw=Throw("t20"),
+            throw_in_round=0,
+            round_of_leg=0,
+        )
         and len(scoreboard.history[-1][-1]) == 1
     )
+
+
+regular_round_data: list[tuple[int, int]] = [
+    (InputMethod.THREEDARTS, 1, 0),
+    (InputMethod.THREEDARTS, 3, 0),
+    (InputMethod.THREEDARTS, 2, 0),
+    (InputMethod.THREEDARTS, 4, 1),
+    (InputMethod.THREEDARTS, 7, 2),
+    (InputMethod.ROUND, 1, 0),
+    (InputMethod.ROUND, 2, 1),
+    (InputMethod.ROUND, 3, 2),
+]
+
+
+@pytest.mark.parametrize(
+    "input_method, nr_of_throws, expected_round", regular_round_data
+)
+def test_round(input_method: InputMethod, nr_of_throws: int, expected_round: int):
+    game_options = GameOptions(start_points=501, input_method=input_method)
+    scoreboard = Scoreboard(game_options)
+    player = scoreboard.register_player("tester")
+    for i in range(nr_of_throws):
+        scoreboard.add_throw(player, Throw("1"), i % InputMethod.THREEDARTS.value)
+    assert scoreboard.get_last_turn_of_leg(player).round_of_leg == expected_round
+
+
+# for InputMethode.ROUND automatically true, because incremented after each throw
+def test_overthow_round():
+    game_options = GameOptions(start_points=2, input_method=InputMethod.THREEDARTS)
+    scoreboard = Scoreboard(game_options)
+    player = scoreboard.register_player("tester")
+    scoreboard.history[-1][-1].append(
+        Turn(
+            player=player,
+            round_of_leg=0,
+            score=2,
+            throw=Throw("10"),
+            throw_in_round=0,
+        )
+    )
+    assert scoreboard.get_round(player) == 1
 
 
 starting_data: list[tuple[int, int, int, int]] = [
